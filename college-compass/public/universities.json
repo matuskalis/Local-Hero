@@ -1,0 +1,252 @@
+[
+  {
+    "name": "Harvard University",
+    "state": "MA",
+    "avg_gpa": 3.95,
+    "avg_sat": 1520,
+    "acceptance_rate": 4,
+    "tuition": 55587,
+    "preferred_majors": ["Economics", "Computer Science", "Law", "Biology", "Psychology"],
+    "extracurricular_importance": "high"
+  },
+  {
+    "name": "Stanford University",
+    "state": "CA",
+    "avg_gpa": 3.96,
+    "avg_sat": 1505,
+    "acceptance_rate": 4,
+    "tuition": 56169,
+    "preferred_majors": ["Computer Science", "Engineering", "Biology", "Psychology", "Economics"],
+    "extracurricular_importance": "high"
+  },
+  {
+    "name": "Massachusetts Institute of Technology",
+    "state": "MA",
+    "avg_gpa": 3.96,
+    "avg_sat": 1540,
+    "acceptance_rate": 7,
+    "tuition": 57786,
+    "preferred_majors": ["Computer Science", "Engineering", "Physics", "Mathematics", "Chemistry"],
+    "extracurricular_importance": "high"
+  },
+  {
+    "name": "Yale University",
+    "state": "CT",
+    "avg_gpa": 3.94,
+    "avg_sat": 1515,
+    "acceptance_rate": 6,
+    "tuition": 59950,
+    "preferred_majors": ["Economics", "Biology", "History", "Psychology", "Political Science"],
+    "extracurricular_importance": "high"
+  },
+  {
+    "name": "Princeton University",
+    "state": "NJ",
+    "avg_gpa": 3.93,
+    "avg_sat": 1515,
+    "acceptance_rate": 6,
+    "tuition": 57410,
+    "preferred_majors": ["Economics", "Computer Science", "Engineering", "Biology", "History"],
+    "extracurricular_importance": "high"
+  },
+  {
+    "name": "Columbia University",
+    "state": "NY",
+    "avg_gpa": 3.91,
+    "avg_sat": 1505,
+    "acceptance_rate": 6,
+    "tuition": 66139,
+    "preferred_majors": ["Economics", "Computer Science", "Engineering", "Biology", "Psychology"],
+    "extracurricular_importance": "high"
+  },
+  {
+    "name": "University of Pennsylvania",
+    "state": "PA",
+    "avg_gpa": 3.90,
+    "avg_sat": 1500,
+    "acceptance_rate": 8,
+    "tuition": 61710,
+    "preferred_majors": ["Business", "Economics", "Computer Science", "Engineering", "Biology"],
+    "extracurricular_importance": "high"
+  },
+  {
+    "name": "Duke University",
+    "state": "NC",
+    "avg_gpa": 3.88,
+    "avg_sat": 1505,
+    "acceptance_rate": 8,
+    "tuition": 60488,
+    "preferred_majors": ["Biology", "Computer Science", "Economics", "Engineering", "Psychology"],
+    "extracurricular_importance": "high"
+  },
+  {
+    "name": "University of California, Berkeley",
+    "state": "CA",
+    "avg_gpa": 3.89,
+    "avg_sat": 1415,
+    "acceptance_rate": 15,
+    "tuition": 44115,
+    "preferred_majors": ["Computer Science", "Engineering", "Biology", "Economics", "Psychology"],
+    "extracurricular_importance": "medium"
+  },
+  {
+    "name": "University of Michigan",
+    "state": "MI",
+    "avg_gpa": 3.88,
+    "avg_sat": 1435,
+    "acceptance_rate": 20,
+    "tuition": 16836,
+    "preferred_majors": ["Engineering", "Computer Science", "Business", "Biology", "Psychology"],
+    "extracurricular_importance": "medium"
+  },
+  {
+    "name": "University of Virginia",
+    "state": "VA",
+    "avg_gpa": 3.85,
+    "avg_sat": 1415,
+    "acceptance_rate": 21,
+    "tuition": 19871,
+    "preferred_majors": ["Business", "Economics", "Engineering", "Biology", "Psychology"],
+    "extracurricular_importance": "medium"
+  },
+  {
+    "name": "University of North Carolina at Chapel Hill",
+    "state": "NC",
+    "avg_gpa": 3.83,
+    "avg_sat": 1385,
+    "acceptance_rate": 23,
+    "tuition": 8997,
+    "preferred_majors": ["Biology", "Business", "Psychology", "Computer Science", "Economics"],
+    "extracurricular_importance": "medium"
+  },
+  {
+    "name": "University of California, Los Angeles",
+    "state": "CA",
+    "avg_gpa": 3.90,
+    "avg_sat": 1405,
+    "acceptance_rate": 11,
+    "tuition": 44115,
+    "preferred_majors": ["Biology", "Computer Science", "Psychology", "Economics", "Engineering"],
+    "extracurricular_importance": "medium"
+  },
+  {
+    "name": "New York University",
+    "state": "NY",
+    "avg_gpa": 3.82,
+    "avg_sat": 1440,
+    "acceptance_rate": 16,
+    "tuition": 56500,
+    "preferred_majors": ["Business", "Computer Science", "Economics", "Psychology", "Biology"],
+    "extracurricular_importance": "medium"
+  },
+  {
+    "name": "University of Texas at Austin",
+    "state": "TX",
+    "avg_gpa": 3.80,
+    "avg_sat": 1355,
+    "acceptance_rate": 32,
+    "tuition": 11448,
+    "preferred_majors": ["Engineering", "Computer Science", "Business", "Biology", "Psychology"],
+    "extracurricular_importance": "medium"
+  },
+  {
+    "name": "University of Illinois at Urbana-Champaign",
+    "state": "IL",
+    "avg_gpa": 3.78,
+    "avg_sat": 1335,
+    "acceptance_rate": 60,
+    "tuition": 16862,
+    "preferred_majors": ["Engineering", "Computer Science", "Business", "Biology", "Psychology"],
+    "extracurricular_importance": "low"
+  },
+  {
+    "name": "University of Wisconsin-Madison",
+    "state": "WI",
+    "avg_gpa": 3.76,
+    "avg_sat": 1330,
+    "acceptance_rate": 57,
+    "tuition": 10720,
+    "preferred_majors": ["Business", "Engineering", "Biology", "Psychology", "Computer Science"],
+    "extracurricular_importance": "low"
+  },
+  {
+    "name": "University of Washington",
+    "state": "WA",
+    "avg_gpa": 3.75,
+    "avg_sat": 1320,
+    "acceptance_rate": 56,
+    "tuition": 12076,
+    "preferred_majors": ["Computer Science", "Engineering", "Biology", "Business", "Psychology"],
+    "extracurricular_importance": "low"
+  },
+  {
+    "name": "University of Florida",
+    "state": "FL",
+    "avg_gpa": 3.72,
+    "avg_sat": 1330,
+    "acceptance_rate": 30,
+    "tuition": 6380,
+    "preferred_majors": ["Engineering", "Biology", "Business", "Psychology", "Computer Science"],
+    "extracurricular_importance": "low"
+  },
+  {
+    "name": "University of Georgia",
+    "state": "GA",
+    "avg_gpa": 3.70,
+    "avg_sat": 1320,
+    "acceptance_rate": 40,
+    "tuition": 12080,
+    "preferred_majors": ["Business", "Biology", "Psychology", "Engineering", "Computer Science"],
+    "extracurricular_importance": "low"
+  },
+  {
+    "name": "Ohio State University",
+    "state": "OH",
+    "avg_gpa": 3.68,
+    "avg_sat": 1310,
+    "acceptance_rate": 68,
+    "tuition": 11518,
+    "preferred_majors": ["Engineering", "Business", "Biology", "Psychology", "Computer Science"],
+    "extracurricular_importance": "low"
+  },
+  {
+    "name": "Penn State University",
+    "state": "PA",
+    "avg_gpa": 3.65,
+    "avg_sat": 1300,
+    "acceptance_rate": 78,
+    "tuition": 18704,
+    "preferred_majors": ["Engineering", "Business", "Biology", "Psychology", "Computer Science"],
+    "extracurricular_importance": "low"
+  },
+  {
+    "name": "University of Minnesota",
+    "state": "MN",
+    "avg_gpa": 3.66,
+    "avg_sat": 1305,
+    "acceptance_rate": 73,
+    "tuition": 15348,
+    "preferred_majors": ["Engineering", "Business", "Biology", "Psychology", "Computer Science"],
+    "extracurricular_importance": "low"
+  },
+  {
+    "name": "University of Arizona",
+    "state": "AZ",
+    "avg_gpa": 3.64,
+    "avg_sat": 1295,
+    "acceptance_rate": 85,
+    "tuition": 12300,
+    "preferred_majors": ["Engineering", "Business", "Biology", "Psychology", "Computer Science"],
+    "extracurricular_importance": "low"
+  },
+  {
+    "name": "Arizona State University",
+    "state": "AZ",
+    "avg_gpa": 3.60,
+    "avg_sat": 1280,
+    "acceptance_rate": 88,
+    "tuition": 11318,
+    "preferred_majors": ["Engineering", "Business", "Biology", "Psychology", "Computer Science"],
+    "extracurricular_importance": "low"
+  }
+] 
