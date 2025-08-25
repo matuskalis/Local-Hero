@@ -63,9 +63,9 @@ export default function ProfileScreen({ navigation, route }: any) {
           style={styles.backButton}
           onPress={handleBackPress}
         >
-          <Ionicons name="arrow-back" size={24} color="white" />
+          <Ionicons name="arrow-back" size={28} color="white" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile</Text>
+        <Text style={styles.headerTitle}>👤 Profile</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -73,10 +73,10 @@ export default function ProfileScreen({ navigation, route }: any) {
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
-              <Ionicons name="person" size={48} color="white" />
+              <Ionicons name="person" size={64} color="white" />
             </View>
             <Text style={styles.userName}>{userName}</Text>
-            <Text style={styles.userLocation}>Melstone, MT</Text>
+            <Text style={styles.userLocation}>📍 Melstone, MT</Text>
           </View>
         </View>
 
@@ -98,11 +98,11 @@ export default function ProfileScreen({ navigation, route }: any) {
         </View>
 
         <View style={styles.requestsSection}>
-          <Text style={styles.sectionTitle}>My Requests</Text>
+          <Text style={styles.sectionTitle}>My Requests 📋</Text>
           
           {myRequests.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="add-circle" size={48} color="#ccc" />
+              <Text style={styles.emptyEmoji}>📝</Text>
               <Text style={styles.emptyText}>No requests yet</Text>
               <Text style={styles.emptySubtext}>
                 Create your first request to get help from the community
@@ -121,21 +121,21 @@ export default function ProfileScreen({ navigation, route }: any) {
                       style={styles.deleteButton}
                       onPress={() => handleDeleteRequest(request)}
                     >
-                      <Ionicons name="trash" size={20} color="#e74c3c" />
+                      <Ionicons name="trash" size={24} color="#e74c3c" />
                     </TouchableOpacity>
                   </View>
                   
                   <View style={styles.requestFooter}>
                     <View style={styles.requestMeta}>
-                      <Ionicons name="time" size={16} color="#666" />
+                      <Ionicons name="time" size={20} color="#34495e" />
                       <Text style={styles.requestMetaText}>{request.when}</Text>
                     </View>
                     
                     <View style={styles.requestMeta}>
                       <Ionicons 
                         name={request.visibility === 'public' ? 'globe' : 'people'} 
-                        size={16} 
-                        color="#666" 
+                        size={20} 
+                        color="#34495e" 
                       />
                       <Text style={styles.requestMetaText}>
                         {request.visibility === 'public' ? 'Public' : 'Friends'}
@@ -143,9 +143,9 @@ export default function ProfileScreen({ navigation, route }: any) {
                     </View>
                     
                     <View style={styles.requestMeta}>
-                      <Ionicons name="chatbubble" size={16} color="#666" />
+                      <Ionicons name="chatbubble" size={20} color="#34495e" />
                       <Text style={styles.requestMetaText}>
-                        {request.responses || 0} responses
+                        Waiting for help...
                       </Text>
                     </View>
                   </View>
@@ -160,7 +160,7 @@ export default function ProfileScreen({ navigation, route }: any) {
             style={styles.actionButton}
             onPress={handleCreateNewRequest}
           >
-            <Ionicons name="add-circle" size={24} color="white" />
+            <Ionicons name="add-circle" size={32} color="white" />
             <Text style={styles.actionButtonText}>Create New Request</Text>
           </TouchableOpacity>
         </View>
@@ -170,9 +170,7 @@ export default function ProfileScreen({ navigation, route }: any) {
       {showDeletePopup && (
         <View style={styles.popupOverlay}>
           <View style={styles.deletePopup}>
-            <View style={styles.deleteIcon}>
-              <Ionicons name="trash" size={50} color="#e74c3c" />
-            </View>
+            <Text style={styles.deleteEmoji}>🗑️</Text>
             <Text style={styles.deleteTitle}>Delete Request?</Text>
             <Text style={styles.deleteMessage}>
               Are you sure you want to delete "{requestToDelete?.body}"? This action cannot be undone.
@@ -201,76 +199,81 @@ export default function ProfileScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f9fa',
   },
   header: {
-    backgroundColor: '#4CAF50',
-    padding: 20,
+    backgroundColor: '#2c3e50',
+    padding: 28,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 50, // Add extra padding for status bar
+    paddingTop: 60,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     color: 'white',
     flex: 1,
     textAlign: 'center',
   },
   headerSpacer: {
-    width: 40,
+    width: 48,
   },
   content: {
     flex: 1,
   },
   profileSection: {
     backgroundColor: 'white',
-    padding: 20,
-    marginBottom: 20,
+    padding: 28,
+    marginBottom: 24,
     alignItems: 'center',
   },
   avatarContainer: {
     alignItems: 'center',
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#4CAF50',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#27ae60',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
   userName: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#2c3e50',
     marginBottom: 8,
   },
   userLocation: {
-    fontSize: 16,
+    fontSize: 20,
     color: '#7f8c8d',
   },
   statsSection: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 24,
   },
   statCard: {
     flex: 1,
     backgroundColor: 'white',
-    padding: 20,
-    marginHorizontal: 5,
-    borderRadius: 12,
+    padding: 24,
+    marginHorizontal: 6,
+    borderRadius: 16,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -279,30 +282,31 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#27ae60',
     marginBottom: 8,
   },
   statLabel: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#7f8c8d',
     textAlign: 'center',
+    fontWeight: '500',
   },
   requestsSection: {
     paddingHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#2c3e50',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   requestCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    marginBottom: 15,
+    borderRadius: 16,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -310,23 +314,25 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   requestContent: {
-    padding: 16,
+    padding: 24,
   },
   requestHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   requestBody: {
-    fontSize: 16,
+    fontSize: 20,
     color: '#2c3e50',
-    lineHeight: 22,
+    lineHeight: 28,
     flex: 1,
-    marginRight: 10,
+    marginRight: 16,
   },
   deleteButton: {
-    padding: 8,
+    padding: 12,
+    backgroundColor: '#fdf2f2',
+    borderRadius: 12,
   },
   requestFooter: {
     flexDirection: 'row',
@@ -338,51 +344,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   requestMetaText: {
-    fontSize: 14,
-    color: '#666',
-    marginLeft: 4,
+    fontSize: 18,
+    color: '#34495e',
+    marginLeft: 8,
+    fontWeight: '500',
   },
   emptyState: {
     alignItems: 'center',
-    padding: 40,
+    padding: 48,
     backgroundColor: 'white',
-    borderRadius: 12,
+    borderRadius: 16,
+  },
+  emptyEmoji: {
+    fontSize: 64,
+    marginBottom: 20,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '600',
-    color: '#666',
+    color: '#2c3e50',
     marginTop: 16,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   emptySubtext: {
-    fontSize: 14,
-    color: '#999',
+    fontSize: 18,
+    color: '#7f8c8d',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 26,
   },
   actionsSection: {
     paddingHorizontal: 20,
     marginBottom: 40,
   },
   actionButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#27ae60',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12,
+    padding: 24,
+    borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
   actionButtonText: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '600',
     color: 'white',
-    marginLeft: 12,
+    marginLeft: 16,
   },
   popupOverlay: {
     position: 'absolute',
@@ -390,7 +401,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
@@ -398,27 +409,28 @@ const styles = StyleSheet.create({
   deletePopup: {
     backgroundColor: 'white',
     margin: 20,
-    borderRadius: 16,
-    padding: 30,
+    borderRadius: 20,
+    padding: 32,
     alignItems: 'center',
-    maxWidth: 320,
+    maxWidth: 340,
   },
-  deleteIcon: {
+  deleteEmoji: {
+    fontSize: 64,
     marginBottom: 20,
   },
   deleteTitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#2c3e50',
-    marginBottom: 15,
+    marginBottom: 16,
     textAlign: 'center',
   },
   deleteMessage: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 25,
+    fontSize: 20,
+    color: '#34495e',
+    marginBottom: 28,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 28,
   },
   deleteButtons: {
     flexDirection: 'row',
@@ -426,27 +438,27 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   cancelButton: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 25,
-    paddingVertical: 12,
-    borderRadius: 20,
-    marginRight: 10,
+    backgroundColor: '#ecf0f1',
+    paddingHorizontal: 28,
+    paddingVertical: 16,
+    borderRadius: 24,
+    marginRight: 12,
   },
   cancelButtonText: {
-    color: '#666',
-    fontSize: 16,
+    color: '#34495e',
+    fontSize: 18,
     fontWeight: '600',
   },
   confirmDeleteButton: {
     backgroundColor: '#e74c3c',
-    paddingHorizontal: 25,
-    paddingVertical: 12,
-    borderRadius: 20,
-    marginLeft: 10,
+    paddingHorizontal: 28,
+    paddingVertical: 16,
+    borderRadius: 24,
+    marginLeft: 12,
   },
   confirmDeleteButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
 });

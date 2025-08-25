@@ -40,17 +40,22 @@ export default function InboxScreen({ navigation, route }: any) {
     console.log('Message pressed:', message);
   };
 
+  const handleReply = (message: any) => {
+    // Handle reply
+    console.log('Reply to:', message);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Inbox</Text>
+        <Text style={styles.headerTitle}>📬 Inbox</Text>
         <Text style={styles.headerSubtitle}>Messages from your community</Text>
       </View>
 
       <ScrollView style={styles.content}>
         {messages.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="mail" size={48} color="#ccc" />
+            <Text style={styles.emptyEmoji}>📭</Text>
             <Text style={styles.emptyText}>No messages yet</Text>
             <Text style={styles.emptySubtext}>
               When people respond to your requests, you\'ll see them here
@@ -59,39 +64,50 @@ export default function InboxScreen({ navigation, route }: any) {
         ) : (
           <View style={styles.messagesSection}>
             {messages.map((message) => (
-              <TouchableOpacity
-                key={message.id}
-                style={[styles.messageCard, message.unread && styles.unreadMessage]}
-                onPress={() => handleMessagePress(message)}
-              >
-                <View style={styles.messageHeader}>
-                  <View style={styles.messageLeft}>
-                    <Text style={styles.messageFrom}>{message.from}</Text>
-                    <Text style={styles.messageSubject}>{message.subject}</Text>
+              <View key={message.id} style={styles.messageCard}>
+                <TouchableOpacity
+                  style={styles.messageContent}
+                  onPress={() => handleMessagePress(message)}
+                >
+                  <View style={styles.messageHeader}>
+                    <View style={styles.messageLeft}>
+                      <Text style={styles.messageFrom}>{message.from}</Text>
+                      <Text style={styles.messageSubject}>{message.subject}</Text>
+                    </View>
+                    <View style={styles.messageRight}>
+                      <Text style={styles.messageTime}>{message.time}</Text>
+                      {message.unread && (
+                        <View style={styles.unreadBadge}>
+                          <Text style={styles.unreadText}>New</Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
-                  <View style={styles.messageRight}>
-                    <Text style={styles.messageTime}>{message.time}</Text>
-                    {message.unread && (
-                      <View style={styles.unreadBadge}>
-                        <Text style={styles.unreadText}>New</Text>
-                      </View>
-                    )}
-                  </View>
+                  
+                  <Text style={styles.messagePreview}>{message.preview}</Text>
+                </TouchableOpacity>
+
+                <View style={styles.messageActions}>
+                  <TouchableOpacity
+                    style={styles.replyButton}
+                    onPress={() => handleReply(message)}
+                  >
+                    <Ionicons name="chatbubble" size={24} color="white" />
+                    <Text style={styles.replyButtonText}>Reply</Text>
+                  </TouchableOpacity>
                 </View>
-                
-                <Text style={styles.messagePreview}>{message.preview}</Text>
-              </TouchableOpacity>
+              </View>
             ))}
           </View>
         )}
 
         <View style={styles.inviteSection}>
-          <Text style={styles.sectionTitle}>Grow Your Network</Text>
+          <Text style={styles.sectionTitle}>Grow Your Network 🌱</Text>
           <TouchableOpacity
             style={styles.inviteButton}
             onPress={handleInviteFriends}
           >
-            <Ionicons name="people" size={28} color="white" />
+            <Ionicons name="people" size={32} color="white" />
             <Text style={styles.inviteButtonText}>Invite Friends</Text>
           </TouchableOpacity>
           <Text style={styles.inviteSubtext}>
@@ -106,22 +122,22 @@ export default function InboxScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f9fa',
   },
   header: {
-    backgroundColor: '#4CAF50',
-    padding: 20,
+    backgroundColor: '#2c3e50',
+    padding: 28,
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 5,
+    marginBottom: 8,
   },
   headerSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 20,
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   content: {
     flex: 1,
@@ -131,121 +147,146 @@ const styles = StyleSheet.create({
   },
   messageCard: {
     backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 20,
+    borderRadius: 16,
+    marginBottom: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  unreadMessage: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
+  messageContent: {
+    padding: 24,
   },
   messageHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 15,
+    marginBottom: 16,
   },
   messageLeft: {
     flex: 1,
-    marginRight: 15,
+    marginRight: 20,
   },
   messageRight: {
     alignItems: 'flex-end',
     minWidth: 80,
   },
   messageFrom: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '600',
     color: '#2c3e50',
     marginBottom: 8,
   },
   messageSubject: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '500',
     color: '#34495e',
-    marginBottom: 5,
+    marginBottom: 6,
   },
   messageTime: {
-    fontSize: 14,
+    fontSize: 18,
     color: '#7f8c8d',
     marginBottom: 8,
   },
   messagePreview: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 22,
+    fontSize: 20,
+    color: '#34495e',
+    lineHeight: 28,
   },
   unreadBadge: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
+    backgroundColor: '#e74c3c',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
   },
   unreadText: {
-    fontSize: 12,
+    fontSize: 14,
     color: 'white',
     fontWeight: '600',
   },
-  emptyState: {
-    alignItems: 'center',
-    padding: 40,
-    backgroundColor: 'white',
-    margin: 20,
-    borderRadius: 12,
+  messageActions: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
   },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#666',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  inviteSection: {
-    padding: 20,
-    marginBottom: 40,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  inviteButton: {
-    backgroundColor: '#4CAF50',
+  replyButton: {
+    backgroundColor: '#27ae60',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
     borderRadius: 12,
-    marginBottom: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  inviteButtonText: {
-    fontSize: 18,
+  replyButtonText: {
+    fontSize: 20,
     fontWeight: '600',
     color: 'white',
     marginLeft: 12,
   },
-  inviteSubtext: {
-    fontSize: 14,
-    color: '#666',
+  emptyState: {
+    alignItems: 'center',
+    padding: 48,
+    backgroundColor: 'white',
+    margin: 20,
+    borderRadius: 16,
+  },
+  emptyEmoji: {
+    fontSize: 64,
+    marginBottom: 20,
+  },
+  emptyText: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  emptySubtext: {
+    fontSize: 20,
+    color: '#7f8c8d',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 28,
+  },
+  inviteSection: {
+    padding: 20,
+    marginBottom: 40,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  inviteButton: {
+    backgroundColor: '#27ae60',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    borderRadius: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  inviteButtonText: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: 'white',
+    marginLeft: 16,
+  },
+  inviteSubtext: {
+    fontSize: 18,
+    color: '#34495e',
+    textAlign: 'center',
+    lineHeight: 26,
   },
 });

@@ -10,36 +10,17 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { addRequest } from './HomeScreen';
 
-const SUGGESTED_NEEDS = [
-  'Bring firewood',
-  'Shovel driveway',
-  'Grocery pickup',
-  'Yard work',
-  'Help with technology',
-  'Ride to appointment',
-  'Pet care',
-  'House cleaning',
-  'Meal preparation',
-  'Garden maintenance'
-];
-
 export default function PostScreen({ navigation, route }: any) {
-  const [currentStep, setCurrentStep] = useState(1);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  const userName = route?.params?.userName || 'Your Name';
-  
-  // Form data
   const [body, setBody] = useState('');
   const [whenText, setWhenText] = useState('');
   const [visibility, setVisibility] = useState<'public' | 'friends'>('public');
   const [community, setCommunity] = useState('Melstone, MT');
+  const [bodyHeight, setBodyHeight] = useState(60);
+  const userName = route?.params?.userName || 'Your Name';
 
   const handleSubmit = () => {
-    if (!body.trim()) {
-      return;
-    }
-
-    if (!community.trim()) {
+    if (!body.trim() || !community.trim()) {
       return;
     }
 
@@ -50,6 +31,7 @@ export default function PostScreen({ navigation, route }: any) {
       when: whenText.trim() || 'No specific time',
       visibility,
       community: community.trim(),
+      category: 'general',
       allowInAppMessages: true,
       allowPhoneCalls: true,
     };
@@ -63,214 +45,106 @@ export default function PostScreen({ navigation, route }: any) {
 
   const handleSuccessOK = () => {
     setShowSuccessPopup(false);
-    // Reset form and go back to first step
+    // Reset form
     setBody('');
     setWhenText('');
     setVisibility('public');
     setCommunity('Melstone, MT');
-    setCurrentStep(1);
+    setBodyHeight(60);
     navigation.navigate('Home');
   };
 
-  const renderStep1 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>What do you need help with?</Text>
-      <Text style={styles.stepSubtitle}>Describe what you need clearly</Text>
-      
-      <TextInput
-        style={styles.textInput}
-        placeholder="e.g., Need help shoveling driveway after snow"
-        value={body}
-        onChangeText={setBody}
-        multiline
-        numberOfLines={4}
-        textAlignVertical="top"
-      />
-
-      <View style={styles.suggestionsContainer}>
-        <Text style={styles.suggestionsTitle}>Quick suggestions:</Text>
-        <View style={styles.suggestionsGrid}>
-          {SUGGESTED_NEEDS.map((need, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.suggestionChip}
-              onPress={() => setBody(need)}
-            >
-              <Text style={styles.suggestionText}>{need}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-    </View>
-  );
-
-  const renderStep2 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>When do you need help?</Text>
-      <Text style={styles.stepSubtitle}>Optional - add timing details</Text>
-      
-      <TextInput
-        style={styles.textInput}
-        placeholder="e.g., This weekend, Next week, ASAP"
-        value={whenText}
-        onChangeText={setWhenText}
-      />
-    </View>
-  );
-
-  const renderStep3 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>Who can see this?</Text>
-      <Text style={styles.stepSubtitle}>Choose visibility</Text>
-      
-      <TouchableOpacity
-        style={[
-          styles.visibilityOption,
-          visibility === 'public' && styles.visibilityOptionSelected
-        ]}
-        onPress={() => setVisibility('public')}
-      >
-        <Ionicons name="globe" size={24} color={visibility === 'public' ? '#4CAF50' : '#666'} />
-        <Text style={[styles.visibilityText, visibility === 'public' && styles.visibilityTextSelected]}>
-          Public - Everyone in Melstone can see this
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[
-          styles.visibilityOption,
-          visibility === 'friends' && styles.visibilityOptionSelected
-        ]}
-        onPress={() => setVisibility('friends')}
-      >
-        <Ionicons name="people" size={24} color={visibility === 'friends' ? '#4CAF50' : '#666'} />
-        <Text style={[styles.visibilityText, visibility === 'friends' && styles.visibilityTextSelected]}>
-          Friends only - Only your friends can see this
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderStep4 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>Where are you located?</Text>
-      <Text style={styles.stepSubtitle}>Your community</Text>
-      
-      <TextInput
-        style={styles.textInput}
-        placeholder="Community name"
-        value={community}
-        onChangeText={setCommunity}
-      />
-
-      <View style={styles.infoBox}>
-        <Ionicons name="information-circle" size={20} color="#4CAF50" />
-        <Text style={styles.infoText}>
-          People can contact you via in-app messages and phone calls
-        </Text>
-      </View>
-    </View>
-  );
-
-  const renderCurrentStep = () => {
-    switch (currentStep) {
-      case 1: return renderStep1();
-      case 2: return renderStep2();
-      case 3: return renderStep3();
-      case 4: return renderStep4();
-      default: return renderStep1();
-    }
-  };
-
-  const canGoNext = () => {
-    switch (currentStep) {
-      case 1: return body.trim().length > 0;
-      case 2: return true;
-      case 3: return true;
-      case 4: return community.trim().length > 0;
-      default: return false;
-    }
-  };
-
-  const canGoBack = () => currentStep > 1;
-
-  const handleNext = () => {
-    if (canGoNext()) {
-      if (currentStep === 4) {
-        // Last step - submit automatically
-        handleSubmit();
-      } else {
-        setCurrentStep(currentStep + 1);
-      }
-    }
-  };
-
-  const handleBack = () => {
-    if (canGoBack()) {
-      setCurrentStep(currentStep - 1);
-    }
+  const handleBodyContentSizeChange = (event: any) => {
+    const height = Math.max(60, event.nativeEvent.contentSize.height);
+    setBodyHeight(height);
   };
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Post a Request</Text>
-          <Text style={styles.headerSubtitle}>Step {currentStep} of 4</Text>
+          <Text style={styles.headerTitle}>📝 Create New Request</Text>
+          <Text style={styles.headerSubtitle}>Help your community know what you need</Text>
         </View>
 
-        <View style={styles.progressContainer}>
-          {[1, 2, 3, 4].map((step) => (
-            <View key={step} style={styles.progressStep}>
-              <View style={[
-                styles.progressCircle,
-                step <= currentStep && styles.progressCircleActive
-              ]}>
-                {step < currentStep ? (
-                  <Ionicons name="checkmark" size={16} color="white" />
-                ) : (
-                  <Text style={styles.progressNumber}>{step}</Text>
-                )}
-              </View>
-              {step < 4 && (
-                <View style={[
-                  styles.progressLine,
-                  step < currentStep && styles.progressLineActive
-                ]} />
-              )}
-            </View>
-          ))}
-        </View>
+        <View style={styles.formContainer}>
+          {/* Request Description */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Describe what you need</Text>
+            <TextInput
+              style={[styles.textInput, { height: bodyHeight }]}
+              placeholder="e.g., Need help shoveling driveway after snow"
+              value={body}
+              onChangeText={setBody}
+              multiline
+              textAlignVertical="top"
+              maxLength={200}
+              onContentSizeChange={handleBodyContentSizeChange}
+            />
+            <Text style={styles.characterCount}>{body.length}/200</Text>
+          </View>
 
-        {renderCurrentStep()}
+          {/* When */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>When do you need help?</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="e.g., This weekend, Next week, ASAP"
+              value={whenText}
+              onChangeText={setWhenText}
+              maxLength={50}
+            />
+            <Text style={styles.characterCount}>{whenText.length}/50</Text>
+          </View>
 
-        <View style={styles.buttonContainer}>
-          {canGoBack() && (
-            <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-              <Ionicons name="arrow-back" size={20} color="#666" />
-              <Text style={styles.backButtonText}>Back</Text>
-            </TouchableOpacity>
-          )}
-          
-          {currentStep < 4 ? (
+          {/* Visibility */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Who can see this?</Text>
             <TouchableOpacity
-              style={[styles.nextButton, !canGoNext() && styles.nextButtonDisabled]}
-              onPress={handleNext}
-              disabled={!canGoNext()}
+              style={[
+                styles.visibilityOption,
+                visibility === 'public' && styles.visibilityOptionSelected
+              ]}
+              onPress={() => setVisibility('public')}
             >
-              <Text style={styles.nextButtonText}>Next</Text>
-              <Ionicons name="arrow-forward" size={20} color="white" />
+              <Text style={styles.visibilityText}>Public - Everyone in Melstone can see this</Text>
             </TouchableOpacity>
-          ) : (
+
             <TouchableOpacity
-              style={[styles.submitButton, !canGoNext() && styles.submitButtonDisabled]}
-              onPress={handleSubmit}
-              disabled={!canGoNext()}
+              style={[
+                styles.visibilityOption,
+                visibility === 'friends' && styles.visibilityOptionSelected
+              ]}
+              onPress={() => setVisibility('friends')}
             >
-              <Ionicons name="checkmark" size={20} color="white" />
-              <Text style={styles.submitButtonText}>Post Request</Text>
+              <Text style={styles.visibilityText}>Friends only - Only your friends can see this</Text>
             </TouchableOpacity>
-          )}
+          </View>
+
+          {/* Community */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Where are you located?</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Community name"
+              value={community}
+              onChangeText={setCommunity}
+              maxLength={30}
+            />
+            <Text style={styles.characterCount}>{community.length}/30</Text>
+          </View>
+
+          {/* Submit Button */}
+          <TouchableOpacity
+            style={[
+              styles.submitButton,
+              (!body.trim() || !community.trim()) && styles.submitButtonDisabled
+            ]}
+            onPress={handleSubmit}
+            disabled={!body.trim() || !community.trim()}
+          >
+            <Text style={styles.submitButtonText}>🚀 Post Request</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -278,10 +152,8 @@ export default function PostScreen({ navigation, route }: any) {
       {showSuccessPopup && (
         <View style={styles.popupOverlay}>
           <View style={styles.successPopup}>
-            <View style={styles.successIcon}>
-              <Ionicons name="checkmark-circle" size={60} color="#4CAF50" />
-            </View>
-            <Text style={styles.successTitle}>Request Sent Successfully!</Text>
+            <Text style={styles.successEmoji}>🎉</Text>
+            <Text style={styles.successTitle}>Request Posted Successfully!</Text>
             <Text style={styles.successMessage}>
               Your request for "{body}" has been posted! People in {community} can now see it and offer help.
             </Text>
@@ -301,215 +173,103 @@ export default function PostScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f9fa',
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    backgroundColor: '#4CAF50',
-    padding: 20,
+    backgroundColor: '#2c3e50',
+    padding: 28,
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 5,
+    marginBottom: 8,
+    textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 20,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
   },
-  progressContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 20,
-    backgroundColor: 'white',
-  },
-  progressStep: {
-    alignItems: 'center',
-  },
-  progressCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#ddd',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 8,
-  },
-  progressCircleActive: {
-    backgroundColor: '#4CAF50',
-  },
-  progressNumber: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  progressLine: {
-    width: 40,
-    height: 2,
-    backgroundColor: '#ddd',
-    marginHorizontal: 4,
-  },
-  progressLineActive: {
-    backgroundColor: '#4CAF50',
-  },
-  stepContainer: {
+  formContainer: {
     padding: 20,
+  },
+  section: {
     backgroundColor: 'white',
-    margin: 20,
-    borderRadius: 12,
+    padding: 24,
+    borderRadius: 16,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  stepTitle: {
-    fontSize: 20,
+  sectionTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#2c3e50',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  stepSubtitle: {
-    fontSize: 16,
-    color: '#7f8c8d',
     marginBottom: 20,
     textAlign: 'center',
   },
   textInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
-    fontSize: 16,
+    borderWidth: 2,
+    borderColor: '#ecf0f1',
+    borderRadius: 12,
+    padding: 20,
+    fontSize: 20,
     backgroundColor: 'white',
-    marginBottom: 20,
+    textAlignVertical: 'top',
+    minHeight: 60,
+    maxHeight: 200,
   },
-  suggestionsContainer: {
-    marginTop: 20,
-  },
-  suggestionsTitle: {
+  characterCount: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2c3e50',
-    marginBottom: 15,
-  },
-  suggestionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  suggestionChip: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginBottom: 10,
-    width: '48%',
-  },
-  suggestionText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+    color: '#7f8c8d',
+    textAlign: 'right',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
   visibilityOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    marginBottom: 15,
+    padding: 20,
+    borderWidth: 2,
+    borderColor: '#ecf0f1',
+    borderRadius: 12,
+    marginBottom: 16,
     backgroundColor: 'white',
   },
   visibilityOptionSelected: {
-    borderColor: '#4CAF50',
+    borderColor: '#27ae60',
     backgroundColor: '#f0f8f0',
   },
   visibilityText: {
-    fontSize: 16,
-    color: '#666',
-    marginLeft: 15,
-    flex: 1,
-  },
-  visibilityTextSelected: {
-    color: '#4CAF50',
-    fontWeight: '600',
-  },
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f0f8f0',
-    padding: 15,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
-  },
-  infoText: {
-    fontSize: 14,
-    color: '#4CAF50',
-    marginLeft: 12,
-    flex: 1,
-    lineHeight: 20,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 20,
-    backgroundColor: 'white',
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: 'white',
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: '#666',
-    marginLeft: 8,
-  },
-  nextButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#4CAF50',
-    padding: 15,
-    borderRadius: 8,
-    marginLeft: 'auto',
-  },
-  nextButtonDisabled: {
-    backgroundColor: '#bdc3c7',
-  },
-  nextButtonText: {
-    fontSize: 16,
-    color: 'white',
-    fontWeight: '600',
-    marginRight: 8,
+    fontSize: 20,
+    color: '#2c3e50',
+    lineHeight: 26,
   },
   submitButton: {
-    flexDirection: 'row',
+    backgroundColor: '#27ae60',
+    padding: 24,
+    borderRadius: 16,
     alignItems: 'center',
-    backgroundColor: '#ff9800',
-    padding: 15,
-    borderRadius: 8,
-    marginLeft: 'auto',
+    marginTop: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
   submitButtonDisabled: {
     backgroundColor: '#bdc3c7',
   },
   submitButtonText: {
-    fontSize: 16,
     color: 'white',
-    fontWeight: '600',
-    marginLeft: 8,
+    fontSize: 24,
+    fontWeight: 'bold',
   },
   popupOverlay: {
     position: 'absolute',
@@ -517,7 +277,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
@@ -525,37 +285,38 @@ const styles = StyleSheet.create({
   successPopup: {
     backgroundColor: 'white',
     margin: 20,
-    borderRadius: 16,
-    padding: 30,
+    borderRadius: 20,
+    padding: 32,
     alignItems: 'center',
-    maxWidth: 320,
+    maxWidth: 340,
   },
-  successIcon: {
+  successEmoji: {
+    fontSize: 64,
     marginBottom: 20,
   },
   successTitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#2c3e50',
-    marginBottom: 15,
+    marginBottom: 16,
     textAlign: 'center',
   },
   successMessage: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 25,
+    fontSize: 20,
+    color: '#34495e',
+    marginBottom: 28,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 28,
   },
   successButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
+    backgroundColor: '#27ae60',
+    paddingHorizontal: 32,
+    paddingVertical: 20,
     borderRadius: 25,
   },
   successButtonText: {
     color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: 'bold',
   },
 });
