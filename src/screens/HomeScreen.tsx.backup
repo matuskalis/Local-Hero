@@ -1,0 +1,357 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  RefreshControl,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../lib/supabase';
+import { Request, Profile } from '../lib/supabase';
+
+interface RequestWithOwner extends Request {
+  owner: Profile;
+}
+
+export default function HomeScreen({ navigation }: any) {
+  const [requests, setRequests] = useState<RequestWithOwner[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    loadUserProfile();
+    loadRequests();
+  }, []);
+
+  const loadUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const profile = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile.data) {
+          setUserProfile(profile.data);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
+
+  const loadRequests = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('requests')
+        .select(`
+          *,
+          owner:profiles!requests_owner_id_fkey(full_name, community)
+        `)
+        .eq('status', 'open')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching requests:', error);
+        Alert.alert('Error', 'Failed to load requests');
+      } else {
+        setRequests(data || []);
+      }
+    } catch (error) {
+      console.error('Error in loadRequests:', error);
+      Alert.alert('Error', 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadRequests();
+    setRefreshing(false);
+  };
+
+  const handleOfferHelp = async (requestId: string) => {
+    Alert.prompt(
+      'Offer to Help',
+      'Add a message (optional):',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Send Offer',
+          onPress: async (message) => {
+            try {
+              const { error } = await supabase.rpc('create_offer', {
+                p_request_id: requestId,
+                p_message: message || null
+              });
+
+              if (error) {
+                Alert.alert('Error', error.message);
+              } else {
+                Alert.alert('Success', 'Your offer has been sent!');
+                onRefresh(); // Refresh the list
+              }
+            } catch (error) {
+              console.error('Error creating offer:', error);
+              Alert.alert('Error', 'Failed to send offer');
+            }
+          }
+        }
+      ],
+      'plain-text'
+    );
+  };
+
+  const renderRequestCard = ({ item }: { item: RequestWithOwner }) => (
+    <View style={styles.requestCard}>
+      <View style={styles.requestHeader}>
+        <Text style={styles.requesterName}>{item.owner?.full_name || 'Anonymous'}</Text>
+        <View style={styles.visibilityTag}>
+          <Text style={styles.visibilityText}>
+            {item.visibility === 'public' ? '🌍 Public' : '👥 Friends'}
+          </Text>
+        </View>
+      </View>
+
+      <Text style={styles.requestBody}>{item.body}</Text>
+      
+      {item.when_text && (
+        <View style={styles.whenSection}>
+          <Ionicons name="time-outline" size={16} color="#666" />
+          <Text style={styles.whenText}>{item.when_text}</Text>
+        </View>
+      )}
+
+      <View style={styles.requestFooter}>
+        <Text style={styles.communityText}>{item.community}</Text>
+        <TouchableOpacity
+          style={styles.offerButton}
+          onPress={() => handleOfferHelp(item.id)}
+        >
+          <Ionicons name="hand-left" size={16} color="#fff" />
+          <Text style={styles.offerButtonText}>Offer to help</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+        <Text style={styles.loadingText}>Loading requests...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {/* Header Banner */}
+      <View style={styles.headerBanner}>
+        <Text style={styles.bannerTitle}>Need a hand today?</Text>
+        <Text style={styles.bannerSubtitle}>
+          {userProfile?.community || 'Melstone, MT'}
+        </Text>
+      </View>
+
+      {/* Big Action Button */}
+      <TouchableOpacity
+        style={styles.helpButton}
+        onPress={() => navigation.navigate('Post')}
+      >
+        <Ionicons name="add-circle" size={24} color="#fff" />
+        <Text style={styles.helpButtonText}>I need help</Text>
+      </TouchableOpacity>
+
+      {/* Requests List */}
+      <View style={styles.requestsSection}>
+        <Text style={styles.sectionTitle}>Recent Requests</Text>
+        {requests.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="heart-outline" size={48} color="#ccc" />
+            <Text style={styles.emptyStateText}>No requests yet</Text>
+            <Text style={styles.emptyStateSubtext}>
+              Be the first to ask for help or check back later
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={requests}
+            renderItem={renderRequestCard}
+            keyExtractor={(item) => item.id}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.requestsList}
+          />
+        )}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 16,
+  },
+  headerBanner: {
+    backgroundColor: '#4CAF50',
+    padding: 20,
+    alignItems: 'center',
+  },
+  bannerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  bannerSubtitle: {
+    fontSize: 16,
+    color: '#fff',
+    opacity: 0.9,
+  },
+  helpButton: {
+    backgroundColor: '#FF6B35',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  helpButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 12,
+  },
+  requestsSection: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 16,
+  },
+  requestsList: {
+    paddingBottom: 20,
+  },
+  requestCard: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  requestHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  requesterName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  visibilityTag: {
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  visibilityText: {
+    fontSize: 12,
+    color: '#1976D2',
+    fontWeight: '500',
+  },
+  requestBody: {
+    fontSize: 16,
+    color: '#333',
+    lineHeight: 24,
+    marginBottom: 16,
+  },
+  whenSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  whenText: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 8,
+  },
+  requestFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  communityText: {
+    fontSize: 14,
+    color: '#999',
+  },
+  offerButton: {
+    backgroundColor: '#4CAF50',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  offerButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateText: {
+    fontSize: 18,
+    color: '#999',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#ccc',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+}); 

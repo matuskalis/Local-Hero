@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -13,7 +12,6 @@ import InboxScreen from './src/screens/InboxScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
 
 // Simple name input screen - no login needed!
 function NameInputScreen({ onContinue }: { onContinue: (name: string) => void }) {
@@ -21,8 +19,7 @@ function NameInputScreen({ onContinue }: { onContinue: (name: string) => void })
 
   const handleContinue = () => {
     if (!name.trim()) {
-      // Custom popup instead of Alert
-      console.log('Please enter your name');
+      Alert.alert('Error', 'Please enter your name');
       return;
     }
     onContinue(name.trim());
@@ -75,90 +72,57 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName: keyof typeof Ionicons.glyphMap;
+
+            if (route.name === 'Home') {
+              iconName = focused ? 'home' : 'home-outline';
+            } else if (route.name === 'Post') {
+              iconName = focused ? 'add-circle' : 'add-circle-outline';
+            } else if (route.name === 'Inbox') {
+              iconName = focused ? 'mail' : 'mail-outline';
+            } else if (route.name === 'Profile') {
+              iconName = focused ? 'person' : 'person-outline';
+            } else {
+              iconName = 'help-outline';
+            }
+
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: '#4CAF50',
+          tabBarInactiveTintColor: 'gray',
+          headerStyle: {
+            backgroundColor: '#4CAF50',
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        })}
       >
-        <Stack.Screen name="MainTabs">
-          {() => (
-            <Tab.Navigator
-              screenOptions={({ route }) => ({
-                tabBarIcon: ({ focused, color, size }) => {
-                  let iconName: keyof typeof Ionicons.glyphMap;
-
-                  if (route.name === 'Home') {
-                    iconName = focused ? 'home' : 'home-outline';
-                  } else if (route.name === 'Post') {
-                    iconName = focused ? 'add-circle' : 'add-circle-outline';
-                  } else if (route.name === 'Inbox') {
-                    iconName = focused ? 'mail' : 'mail-outline';
-                  } else {
-                    iconName = 'help-outline';
-                  }
-
-                  return <Ionicons name={iconName} size={size} color={color} />;
-                },
-                tabBarActiveTintColor: '#4CAF50',
-                tabBarInactiveTintColor: '#666',
-                headerStyle: {
-                  backgroundColor: '#4CAF50',
-                },
-                headerTintColor: '#fff',
-                headerTitleStyle: {
-                  fontWeight: 'bold',
-                },
-                tabBarStyle: {
-                  height: 70,
-                  paddingBottom: 8,
-                  paddingTop: 8,
-                  backgroundColor: 'white',
-                  borderTopWidth: 2,
-                  borderTopColor: '#4CAF50',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: -3 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 6,
-                  elevation: 12,
-                },
-                tabBarLabelStyle: {
-                  fontSize: 13,
-                  fontWeight: '600',
-                  marginTop: 4,
-                },
-                tabBarIconStyle: {
-                  marginTop: 4,
-                },
-              })}
-            >
-              <Tab.Screen 
-                name="Home" 
-                component={HomeScreen} 
-                options={{ title: 'Home' }}
-                initialParams={{ userName }}
-              />
-              <Tab.Screen 
-                name="Post" 
-                component={PostScreen} 
-                options={{ title: 'Post Request' }}
-                initialParams={{ userName }}
-              />
-              <Tab.Screen 
-                name="Inbox" 
-                component={InboxScreen} 
-                options={{ title: 'Inbox' }}
-                initialParams={{ userName }}
-              />
-            </Tab.Navigator>
-          )}
-        </Stack.Screen>
-        <Stack.Screen 
-          name="Profile" 
-          component={ProfileScreen}
-          options={{ title: 'Profile' }}
-          initialParams={{ userName }}
+        <Tab.Screen 
+          name="Home" 
+          component={HomeScreen} 
+          options={{ title: 'Home' }}
         />
-      </Stack.Navigator>
+        <Tab.Screen 
+          name="Post" 
+          component={PostScreen} 
+          options={{ title: 'Post Request' }}
+        />
+        <Tab.Screen 
+          name="Inbox" 
+          component={InboxScreen} 
+          options={{ title: 'Inbox' }}
+        />
+        <Tab.Screen 
+          name="Profile" 
+          component={ProfileScreen} 
+          options={{ title: 'Profile' }}
+        />
+      </Tab.Navigator>
     </NavigationContainer>
   );
 }
@@ -217,6 +181,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     fontSize: 16,
+    marginBottom: 24,
     backgroundColor: '#fff',
     width: '100%',
     maxWidth: 300,

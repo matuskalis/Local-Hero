@@ -1,353 +1,354 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { useTheme } from '../context/ThemeContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AchievementService } from '../services/AchievementService';
-import { CustomModal } from '../components/CustomModal';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  RefreshControl,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-interface GoodDeed {
-  id: string;
-  description: string;
-  date: string;
-}
+// Shared state for requests - this will be passed between screens
+export let sharedRequests: any[] = [
+  {
+    id: 1,
+    userName: 'John Smith',
+    body: 'Need help shoveling driveway after snow',
+    when: 'This weekend',
+    visibility: 'public',
+    community: 'Melstone, MT',
+    createdAt: '2 hours ago',
+    isOwn: false,
+  },
+  {
+    id: 2,
+    userName: 'Mary Johnson',
+    body: 'Help with grocery pickup',
+    when: 'Tomorrow',
+    visibility: 'public',
+    community: 'Melstone, MT',
+    createdAt: '1 day ago',
+    isOwn: false,
+  },
+];
 
-export const HomeScreen: React.FC = () => {
-  const { currentTheme } = useTheme();
-  const [dailyStreak, setDailyStreak] = useState(0);
-  const [todayDeed, setTodayDeed] = useState<GoodDeed | null>(null);
-  const [lastDeedDate, setLastDeedDate] = useState<string>('');
-  const [showAchievementModal, setShowAchievementModal] = useState(false);
-  const [newAchievement, setNewAchievement] = useState<any>(null);
+export const addRequest = (request: any) => {
+  const newRequest = {
+    ...request,
+    id: Date.now(),
+    createdAt: 'Just now',
+    isOwn: true,
+  };
+  sharedRequests.unshift(newRequest);
+};
 
+export const deleteRequest = (requestId: number) => {
+  const index = sharedRequests.findIndex(req => req.id === requestId);
+  if (index > -1) {
+    sharedRequests.splice(index, 1);
+  }
+};
+
+export default function HomeScreen({ navigation, route }: any) {
+  const [requests, setRequests] = useState(sharedRequests);
+  const [refreshing, setRefreshing] = useState(false);
+  const userName = route?.params?.userName || 'Your Name';
+
+  // Refresh requests from shared state
+  const refreshRequests = () => {
+    setRequests([...sharedRequests]);
+  };
+
+  // Listen for navigation focus to refresh
   useEffect(() => {
-    loadStreakData();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      refreshRequests();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
-  const loadStreakData = async () => {
-    try {
-      const streak = await AsyncStorage.getItem('dailyStreak');
-      const today = await AsyncStorage.getItem('todayDeed');
-      const lastDate = await AsyncStorage.getItem('lastDeedDate');
-      
-      if (streak) {
-        setDailyStreak(parseInt(streak));
-      }
-      
-      if (today) {
-        setTodayDeed(JSON.parse(today));
-      }
-
-      if (lastDate) {
-        setLastDeedDate(lastDate);
-      }
-
-      await checkAndResetStreak();
-    } catch (error) {
-      console.error('Error loading streak data:', error);
-    }
+  const onRefresh = () => {
+    setRefreshing(true);
+    refreshRequests();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 500);
   };
 
-  const checkAndResetStreak = async () => {
-    try {
-      const today = new Date().toDateString();
-      const lastDate = await AsyncStorage.getItem('lastDeedDate');
-      
-      if (lastDate && lastDate !== today) {
-        const lastDateObj = new Date(lastDate);
-        const todayObj = new Date();
-        const diffTime = Math.abs(todayObj.getTime() - lastDateObj.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        if (diffDays > 1) {
-          await AsyncStorage.setItem('dailyStreak', '0');
-          setDailyStreak(0);
-        }
-      }
-    } catch (error) {
-      console.error('Error checking streak reset:', error);
-    }
+  const handleProfilePress = () => {
+    navigation.navigate('Profile', { userName, refreshRequests });
   };
 
-  const addTodayDeed = async () => {
-    const today = new Date().toDateString();
-    
-    if (lastDeedDate === today) {
-      // Allow appending more details to today's good deed without increasing the streak
-      Alert.prompt(
-        "Add More",
-        "Add another kind thing you did today (will be appended to today's entry)",
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Save',
-            onPress: async (extra) => {
-              if (!extra || !extra.trim()) return;
-              try {
-                const current = todayDeed;
-                if (!current) return;
-                const appended: GoodDeed = {
-                  ...current,
-                  description: `${current.description}\n• ${extra.trim()}`,
-                };
-                await AsyncStorage.setItem('todayDeed', JSON.stringify(appended));
-                setTodayDeed(appended);
-                Alert.alert('Updated', "Added to today's good deed! ✨");
-              } catch (e) {
-                Alert.alert('Error', 'Failed to update today\'s good deed');
-              }
-            },
-          },
-        ],
-        'plain-text'
-      );
-      return;
-    }
-
-    Alert.prompt(
-      'Today\'s Good Deed',
-      'What good thing did you do today?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Save',
-          onPress: async (description) => {
-            if (description && description.trim()) {
-              const newDeed: GoodDeed = {
-                id: Date.now().toString(),
-                description: description.trim(),
-                date: new Date().toISOString(),
-              };
-              
-              try {
-                await AsyncStorage.setItem('todayDeed', JSON.stringify(newDeed));
-                await AsyncStorage.setItem('lastDeedDate', today);
-                setTodayDeed(newDeed);
-                setLastDeedDate(today);
-                
-                const newStreak = dailyStreak + 1;
-                await AsyncStorage.setItem('dailyStreak', newStreak.toString());
-                setDailyStreak(newStreak);
-
-                // Persist in allGoodDeeds to maintain totals for achievements
-                try {
-                  const allDeedsRaw = await AsyncStorage.getItem('allGoodDeeds');
-                  const allDeeds: GoodDeed[] = allDeedsRaw ? JSON.parse(allDeedsRaw) : [];
-                  allDeeds.push(newDeed);
-                  await AsyncStorage.setItem('allGoodDeeds', JSON.stringify(allDeeds));
-                } catch {}
-                
-                // Check for achievements
-                const goodDeedsCount = await getGoodDeedsCount();
-                const newGoodDeedsCount = goodDeedsCount + 1;
-                
-                const newAchievements = await AchievementService.checkAndUpdateAchievements('good_deeds', newGoodDeedsCount);
-                const streakAchievements = await AchievementService.checkAndUpdateAchievements('streak', newStreak);
-                
-                const allNewAchievements = [...newAchievements, ...streakAchievements];
-                
-                if (allNewAchievements.length > 0) {
-                  setNewAchievement(allNewAchievements[0]);
-                  setShowAchievementModal(true);
-                }
-                
-                Alert.alert('Success', 'Good deed recorded! 🐝');
-              } catch (error) {
-                Alert.alert('Error', 'Failed to save good deed');
-              }
-            }
-          },
-        },
-      ],
-      'plain-text'
-    );
-  };
-
-  const getGoodDeedsCount = async (): Promise<number> => {
-    try {
-      const allDeeds = await AsyncStorage.getItem('allGoodDeeds');
-      if (allDeeds) {
-        return JSON.parse(allDeeds).length;
-      }
-      return 0;
-    } catch (error) {
-      return 0;
-    }
+  const handleRequestPress = (request: any) => {
+    // Simple info display for now
+    console.log('Request details:', request);
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: currentTheme.backgroundColor }]}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.logo}>🐝</Text>
-        <Text style={[styles.title, { color: currentTheme.textColor }]}>Bee Good</Text>
-        <Text style={[styles.subtitle, { color: currentTheme.textColor }]}>Spreading kindness every day</Text>
-      </View>
-      
-      <View style={[styles.streakCard, { backgroundColor: currentTheme.cardColor }]}>
-        <Text style={[styles.streakTitle, { color: currentTheme.textColor }]}>Daily Streak</Text>
-        <Text style={[styles.streakNumber, { color: currentTheme.accentColor }]}>{dailyStreak}</Text>
-        <Text style={[styles.streakText, { color: currentTheme.textColor }]}>days of kindness</Text>
-      </View>
-      
-      <View style={[styles.todayCard, { backgroundColor: currentTheme.cardColor }]}>
-        <Text style={[styles.todayTitle, { color: currentTheme.textColor }]}>Today's Good Deed</Text>
-        {todayDeed ? (
-          <View style={styles.deedContainer}>
-            <Text style={[styles.deedText, { color: currentTheme.textColor }]}>"{todayDeed.description}"</Text>
-            <Text style={[styles.deedTime, { color: currentTheme.textColor }]}>
-              {new Date(todayDeed.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </Text>
-          </View>
-        ) : (
-          <TouchableOpacity style={[styles.addButton, { backgroundColor: currentTheme.accentColor }]} onPress={addTodayDeed}>
-            <Text style={styles.addButtonText}>+ Add Today's Good Deed</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      
-      <View style={[styles.bottomCard, { backgroundColor: currentTheme.cardColor }]}>
-        <Text style={[styles.bottomTitle, { color: currentTheme.textColor }]}>Keep the streak alive!</Text>
-        <Text style={[styles.bottomText, { color: currentTheme.textColor }]}>
-          Every good deed counts. Come back tomorrow to continue your journey of kindness.
-        </Text>
+        <Text style={styles.headerTitle}>🏠 Local Hero - Melstone</Text>
+        <TouchableOpacity
+          style={styles.profileButton}
+          onPress={handleProfilePress}
+        >
+          <Ionicons name="person" size={28} color="white" />
+        </TouchableOpacity>
       </View>
 
-      <CustomModal
-        visible={showAchievementModal}
-        onClose={() => setShowAchievementModal(false)}
-        title={`🏆 Achievement Unlocked!`}
-        message={`Congratulations! You've earned the "${newAchievement?.name}" achievement!\n\n${newAchievement?.description}`}
-        buttons={[
-          { text: 'Awesome!', onPress: () => setShowAchievementModal(false), style: 'primary' },
-        ]}
-      />
+      <ScrollView
+        style={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>Welcome, {userName}!</Text>
+          <Text style={styles.welcomeSubtitle}>
+            Here are the latest requests from your community
+          </Text>
+        </View>
+
+        <View style={styles.requestsSection}>
+          <Text style={styles.sectionTitle}>Community Requests</Text>
+          
+          {requests.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="people" size={48} color="#ccc" />
+              <Text style={styles.emptyText}>No requests yet</Text>
+              <Text style={styles.emptySubtext}>
+                Be the first to ask for help or wait for others
+              </Text>
+            </View>
+          ) : (
+            requests.map((request) => (
+              <TouchableOpacity
+                key={request.id}
+                style={[styles.requestCard, request.isOwn && styles.ownRequestCard]}
+                onPress={() => handleRequestPress(request)}
+              >
+                <View style={styles.requestHeader}>
+                  <Text style={styles.requestUserName}>
+                    {request.isOwn ? 'You' : request.userName}
+                  </Text>
+                  <Text style={styles.requestTime}>{request.createdAt}</Text>
+                </View>
+                
+                <Text style={styles.requestBody}>{request.body}</Text>
+                
+                <View style={styles.requestFooter}>
+                  <View style={styles.requestMeta}>
+                    <Ionicons name="time" size={18} color="#666" />
+                    <Text style={styles.requestMetaText}>{request.when}</Text>
+                  </View>
+                  
+                  <View style={styles.requestMeta}>
+                    <Ionicons 
+                      name={request.visibility === 'public' ? 'globe' : 'people'} 
+                      size={18} 
+                      color="#666" 
+                    />
+                    <Text style={styles.requestMetaText}>
+                      {request.visibility === 'public' ? 'Public' : 'Friends'}
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.requestMeta}>
+                    <Ionicons name="location" size={18} color="#666" />
+                    <Text style={styles.requestMetaText}>{request.community}</Text>
+                  </View>
+                </View>
+
+                {request.isOwn && (
+                  <View style={styles.ownRequestBadge}>
+                    <Text style={styles.ownRequestText}>Your Request</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+
+        <View style={styles.helpSection}>
+          <Text style={styles.sectionTitle}>How to Help</Text>
+          <View style={styles.helpCard}>
+            <Ionicons name="heart" size={28} color="#4CAF50" />
+            <Text style={styles.helpText}>
+              Tap on any request to see details and offer help
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDEFF2',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 100,
+    backgroundColor: '#f5f5f5',
   },
   header: {
+    backgroundColor: '#4CAF50',
+    padding: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 30,
   },
-  logo: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 32,
+  headerTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    color: 'white',
+    flex: 1,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-  },
-  streakCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 20,
+  profileButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
   },
-  streakTitle: {
+  content: {
+    flex: 1,
+  },
+  welcomeSection: {
+    backgroundColor: 'white',
+    padding: 24,
+    margin: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  welcomeTitle: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 10,
+  },
+  welcomeSubtitle: {
     fontSize: 18,
-    color: '#666',
-    marginBottom: 8,
-  },
-  streakNumber: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: '#FF6B9D',
-    marginBottom: 8,
-  },
-  streakText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  todayCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  todayTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
-  },
-  addButton: {
-    backgroundColor: '#FF6B9D',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  addButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  deedContainer: {
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    padding: 16,
-  },
-  deedText: {
-    fontSize: 16,
-    color: '#333',
-    fontStyle: 'italic',
-    marginBottom: 8,
-  },
-  deedTime: {
-    fontSize: 14,
-    color: '#666',
-  },
-  bottomCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  bottomTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
-  },
-  bottomText: {
-    fontSize: 16,
-    color: '#666',
+    color: '#7f8c8d',
     lineHeight: 24,
   },
-}); 
+  requestsSection: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 18,
+  },
+  requestCard: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  ownRequestCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#4CAF50',
+  },
+  requestHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  requestUserName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2c3e50',
+  },
+  requestTime: {
+    fontSize: 16,
+    color: '#7f8c8d',
+  },
+  requestBody: {
+    fontSize: 18,
+    color: '#2c3e50',
+    lineHeight: 24,
+    marginBottom: 18,
+  },
+  requestFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  requestMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  requestMetaText: {
+    fontSize: 16,
+    color: '#666',
+    marginLeft: 6,
+  },
+  ownRequestBadge: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  ownRequestText: {
+    fontSize: 12,
+    color: 'white',
+    fontWeight: '600',
+  },
+  emptyState: {
+    alignItems: 'center',
+    padding: 40,
+    backgroundColor: 'white',
+    borderRadius: 12,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#666',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  helpSection: {
+    paddingHorizontal: 20,
+    marginBottom: 40,
+  },
+  helpCard: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  helpText: {
+    fontSize: 18,
+    color: '#2c3e50',
+    marginLeft: 16,
+    flex: 1,
+    lineHeight: 24,
+  },
+});

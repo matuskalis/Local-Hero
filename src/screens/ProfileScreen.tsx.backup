@@ -1,0 +1,656 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  FlatList,
+  RefreshControl,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../lib/supabase';
+import { Profile, Friend } from '../lib/supabase';
+
+export default function ProfileScreen({ navigation }: any) {
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Profile[]>([]);
+  const [searching, setSearching] = useState(false);
+
+  // Edit form state
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editCommunity, setEditCommunity] = useState('');
+
+  useEffect(() => {
+    loadProfile();
+    loadFriends();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const profile = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile.data) {
+          setUserProfile(profile.data);
+          setEditName(profile.data.full_name);
+          setEditPhone(profile.data.phone || '');
+          setEditCommunity(profile.data.community);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    }
+  };
+
+  const loadFriends = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('friends')
+        .select(`
+          *,
+          friend:profiles!friends_friend_id_fkey(full_name, community)
+        `)
+        .or(`owner_id.eq.${user.id},friend_id.eq.${user.id}`)
+        .eq('status', 'accepted');
+
+      if (error) {
+        console.error('Error fetching friends:', error);
+      } else {
+        setFriends(data || []);
+      }
+    } catch (error) {
+      console.error('Error loading friends:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([loadProfile(), loadFriends()]);
+    setRefreshing(false);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) {
+      Alert.alert('Error', 'Name is required');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: editName.trim(),
+          phone: editPhone.trim() || null,
+          community: editCommunity.trim(),
+        })
+        .eq('id', userProfile?.id);
+
+      if (error) {
+        Alert.alert('Error', error.message);
+      } else {
+        Alert.alert('Success', 'Profile updated successfully!');
+        setEditing(false);
+        await loadProfile();
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', 'Failed to update profile');
+    }
+  };
+
+  const handleSearchUsers = async () => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, community, karma_points, created_at, updated_at')
+        .or(`full_name.ilike.%${searchQuery}%,phone.ilike.%${searchQuery}%`)
+        .neq('id', user.id)
+        .limit(10);
+
+      if (error) {
+        console.error('Error searching users:', error);
+      } else {
+        setSearchResults(data || []);
+      }
+    } catch (error) {
+      console.error('Error in search:', error);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleAddFriend = async (userId: string, userName: string) => {
+    try {
+      const { error } = await supabase.rpc('request_friendship', {
+        p_addressee_id: userId
+      });
+
+      if (error) {
+        Alert.alert('Error', error.message);
+      } else {
+        Alert.alert('Success', `Friend request sent to ${userName}!`);
+        setSearchQuery('');
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Error adding friend:', error);
+      Alert.alert('Error', 'Failed to send friend request');
+    }
+  };
+
+  const handleSignOut = async () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await supabase.auth.signOut();
+            } catch (error) {
+              console.error('Error signing out:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const renderFriendItem = ({ item }: { item: Friend }) => {
+    const isOwner = item.owner_id === userProfile?.id;
+    const friendProfile = isOwner ? item.friend : undefined;
+    
+    return (
+      <View style={styles.friendItem}>
+        <View style={styles.friendInfo}>
+          <Text style={styles.friendName}>
+            {friendProfile?.full_name || 'Unknown'}
+          </Text>
+          <Text style={styles.friendCommunity}>
+            {friendProfile?.community || 'Unknown location'}
+          </Text>
+        </View>
+        <View style={styles.friendStatus}>
+          <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+          <Text style={styles.friendStatusText}>Friend</Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderSearchResult = ({ item }: { item: Profile }) => (
+    <View style={styles.searchResultItem}>
+      <View style={styles.searchResultInfo}>
+        <Text style={styles.searchResultName}>{item.full_name}</Text>
+        <Text style={styles.searchResultCommunity}>{item.community}</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.addFriendButton}
+        onPress={() => handleAddFriend(item.id, item.full_name)}
+      >
+        <Ionicons name="person-add" size={16} color="#fff" />
+        <Text style={styles.addFriendButtonText}>Add</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+        <Text style={styles.loadingText}>Loading profile...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Profile Header */}
+      <View style={styles.profileHeader}>
+        <View style={styles.avatar}>
+          <Ionicons name="person" size={48} color="#fff" />
+        </View>
+        <Text style={styles.profileName}>
+          {userProfile?.full_name || 'Your Name'}
+        </Text>
+        <Text style={styles.profileCommunity}>
+          {userProfile?.community || 'Melstone, MT'}
+        </Text>
+        
+        <View style={styles.karmaSection}>
+          <Ionicons name="star" size={24} color="#FFD700" />
+          <Text style={styles.karmaPoints}>
+            {userProfile?.karma_points || 0} Karma Points
+          </Text>
+        </View>
+      </View>
+
+      {/* Profile Actions */}
+      <View style={styles.profileActions}>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => setEditing(!editing)}
+        >
+          <Ionicons name="create" size={20} color="#4CAF50" />
+          <Text style={styles.editButtonText}>
+            {editing ? 'Cancel' : 'Edit Profile'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.signOutButton}
+          onPress={handleSignOut}
+        >
+          <Ionicons name="log-out-outline" size={20} color="#f44336" />
+          <Text style={styles.signOutButtonText}>Sign Out</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Edit Profile Form */}
+      {editing && (
+        <View style={styles.editForm}>
+          <Text style={styles.formLabel}>Full Name</Text>
+          <TextInput
+            style={styles.formInput}
+            value={editName}
+            onChangeText={setEditName}
+            placeholder="Enter your full name"
+          />
+
+          <Text style={styles.formLabel}>Phone Number (optional)</Text>
+          <TextInput
+            style={styles.formInput}
+            value={editPhone}
+            onChangeText={setEditPhone}
+            placeholder="Enter your phone number"
+            keyboardType="phone-pad"
+          />
+
+          <Text style={styles.formLabel}>Community</Text>
+          <TextInput
+            style={styles.formInput}
+            value={editCommunity}
+            onChangeText={setEditCommunity}
+            placeholder="e.g., Melstone, MT"
+          />
+
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSaveProfile}
+          >
+            <Ionicons name="checkmark" size={20} color="#fff" />
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Friends Section */}
+      <View style={styles.friendsSection}>
+        <Text style={styles.sectionTitle}>Friends</Text>
+        
+        {/* Add Friend Search */}
+        <View style={styles.searchSection}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by name or phone number"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={handleSearchUsers}
+          />
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={handleSearchUsers}
+            disabled={searching}
+          >
+            {searching ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Ionicons name="search" size={20} color="#fff" />
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Search Results */}
+        {searchResults.length > 0 && (
+          <View style={styles.searchResults}>
+            <Text style={styles.searchResultsTitle}>Search Results:</Text>
+            <FlatList
+              data={searchResults}
+              renderItem={renderSearchResult}
+              keyExtractor={(item) => item.id}
+              scrollEnabled={false}
+            />
+          </View>
+        )}
+
+        {/* Friends List */}
+        {friends.length === 0 ? (
+          <View style={styles.emptyFriends}>
+            <Ionicons name="people-outline" size={48} color="#ccc" />
+            <Text style={styles.emptyFriendsText}>No friends yet</Text>
+            <Text style={styles.emptyFriendsSubtext}>
+              Add friends to share private requests with them
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={friends}
+            renderItem={renderFriendItem}
+            keyExtractor={(item) => item.id.toString()}
+            scrollEnabled={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          />
+        )}
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 16,
+  },
+  profileHeader: {
+    backgroundColor: '#4CAF50',
+    padding: 30,
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  profileName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  profileCommunity: {
+    fontSize: 16,
+    color: '#fff',
+    opacity: 0.9,
+    marginBottom: 20,
+  },
+  karmaSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  karmaPoints: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    marginLeft: 8,
+  },
+  profileActions: {
+    flexDirection: 'row',
+    padding: 20,
+    gap: 12,
+  },
+  editButton: {
+    flex: 1,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  editButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4CAF50',
+    marginLeft: 8,
+  },
+  signOutButton: {
+    flex: 1,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#f44336',
+  },
+  signOutButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#f44336',
+    marginLeft: 8,
+  },
+  editForm: {
+    backgroundColor: '#fff',
+    margin: 20,
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  formLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  formInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
+  saveButton: {
+    backgroundColor: '#4CAF50',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  friendsSection: {
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+  },
+  searchSection: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    gap: 12,
+  },
+  searchInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
+  searchButton: {
+    backgroundColor: '#4CAF50',
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchResults: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  searchResultsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  searchResultInfo: {
+    flex: 1,
+  },
+  searchResultName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  searchResultCommunity: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  addFriendButton: {
+    backgroundColor: '#4CAF50',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  addFriendButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  emptyFriends: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyFriendsText: {
+    fontSize: 18,
+    color: '#999',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyFriendsSubtext: {
+    fontSize: 14,
+    color: '#ccc',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  friendItem: {
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  friendInfo: {
+    flex: 1,
+  },
+  friendName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  friendCommunity: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  friendStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  friendStatusText: {
+    fontSize: 14,
+    color: '#4CAF50',
+    marginLeft: 6,
+    fontWeight: '600',
+  },
+}); 
