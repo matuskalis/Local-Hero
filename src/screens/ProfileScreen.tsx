@@ -8,12 +8,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { sharedRequests, deleteRequest } from './HomeScreen';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ProfileScreen({ navigation, route }: any) {
   const [myRequests, setMyRequests] = useState(sharedRequests.filter(req => req.isOwn));
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [requestToDelete, setRequestToDelete] = useState<any>(null);
   const userName = route?.params?.userName || 'Your Name';
+  const insets = useSafeAreaInsets();
 
   // Refresh when screen comes into focus
   useEffect(() => {
@@ -57,8 +59,8 @@ export default function ProfileScreen({ navigation, route }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={styles.container} edges={[]}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={handleBackPress}
@@ -192,7 +194,7 @@ export default function ProfileScreen({ navigation, route }: any) {
           </View>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -207,7 +209,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 60,
   },
   backButton: {
     width: 48,

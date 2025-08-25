@@ -8,6 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Shared state for requests - this will be passed between screens
 export let sharedRequests: any[] = [
@@ -67,6 +68,7 @@ export default function HomeScreen({ navigation, route }: any) {
   const [requests, setRequests] = useState(sharedRequests);
   const [refreshing, setRefreshing] = useState(false);
   const userName = route?.params?.userName || 'Your Name';
+  const insets = useSafeAreaInsets();
 
   // Refresh requests from shared state
   const refreshRequests = () => {
@@ -99,8 +101,8 @@ export default function HomeScreen({ navigation, route }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={styles.container} edges={[]}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.headerTitle}>Local Hero - Melstone</Text>
         <TouchableOpacity
           style={styles.profileButton}
@@ -194,7 +196,7 @@ export default function HomeScreen({ navigation, route }: any) {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -209,7 +211,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 50,
   },
   headerTitle: {
     fontSize: 24,

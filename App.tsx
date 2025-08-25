@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import NameInputScreen from './src/screens/NameInputScreen';
 import HomeScreen from './src/screens/HomeScreen';
@@ -85,15 +86,21 @@ export default function App() {
   const [userName, setUserName] = useState('');
 
   if (!userName) {
-    return <NameInputScreen onNameSubmit={setUserName} />;
+    return (
+      <SafeAreaProvider>
+        <NameInputScreen onNameSubmit={setUserName} />
+      </SafeAreaProvider>
+    );
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="MainTabs" component={MainTabs} initialParams={{ userName }} />
-        <Stack.Screen name="Profile" component={ProfileScreen} initialParams={{ userName }} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="MainTabs" component={MainTabs} initialParams={{ userName }} />
+          <Stack.Screen name="Profile" component={ProfileScreen} initialParams={{ userName }} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { addRequest } from './HomeScreen';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function PostScreen({ navigation, route }: any) {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
@@ -18,6 +19,7 @@ export default function PostScreen({ navigation, route }: any) {
   const [community, setCommunity] = useState('Melstone, MT');
   const [bodyHeight, setBodyHeight] = useState(60);
   const userName = route?.params?.userName || 'Your Name';
+  const insets = useSafeAreaInsets();
 
   const handleSubmit = () => {
     if (!body.trim() || !community.trim()) {
@@ -60,9 +62,9 @@ export default function PostScreen({ navigation, route }: any) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={[]}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
           <Text style={styles.headerTitle}>📝 Create New Request</Text>
           <Text style={styles.headerSubtitle}>Help your community know what you need</Text>
         </View>
@@ -166,7 +168,7 @@ export default function PostScreen({ navigation, route }: any) {
           </View>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 

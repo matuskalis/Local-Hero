@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface NameInputScreenProps {
   onNameSubmit: (name: string) => void;
@@ -15,6 +16,7 @@ interface NameInputScreenProps {
 
 export default function NameInputScreen({ onNameSubmit }: NameInputScreenProps) {
   const [name, setName] = useState('');
+  const insets = useSafeAreaInsets();
 
   const handleSubmit = () => {
     if (name.trim()) {
@@ -23,45 +25,47 @@ export default function NameInputScreen({ onNameSubmit }: NameInputScreenProps) 
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.title}>🏠 Local Hero</Text>
-          <Text style={styles.subtitle}>Community Help Platform</Text>
-        </View>
+    <SafeAreaView style={styles.container} edges={[]}>
+      <KeyboardAvoidingView 
+        style={styles.container} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={[styles.content, { paddingTop: insets.top + 20 }]}>
+          <View style={styles.header}>
+            <Text style={styles.title}>🏠 Local Hero</Text>
+            <Text style={styles.subtitle}>Community Help Platform</Text>
+          </View>
 
-        <View style={styles.formSection}>
-          <Text style={styles.label}>What\'s your name?</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your name"
-            value={name}
-            onChangeText={setName}
-            autoFocus
-            returnKeyType="done"
-            onSubmitEditing={handleSubmit}
-            maxLength={30}
-          />
-          
-          <TouchableOpacity
-            style={[styles.button, !name.trim() && styles.buttonDisabled]}
-            onPress={handleSubmit}
-            disabled={!name.trim()}
-          >
-            <Text style={styles.buttonText}>Continue</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.formSection}>
+            <Text style={styles.label}>What\'s your name?</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your name"
+              value={name}
+              onChangeText={setName}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleSubmit}
+              maxLength={30}
+            />
+            
+            <TouchableOpacity
+              style={[styles.button, !name.trim() && styles.buttonDisabled]}
+              onPress={handleSubmit}
+              disabled={!name.trim()}
+            >
+              <Text style={styles.buttonText}>Continue</Text>
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.infoSection}>
-          <Text style={styles.infoText}>
-            Local Hero helps you connect with neighbors for mutual support and assistance.
-          </Text>
+          <View style={styles.infoSection}>
+            <Text style={styles.infoText}>
+              Local Hero helps you connect with neighbors for mutual support and assistance.
+            </Text>
+          </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

@@ -8,6 +8,7 @@ import {
   Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function InboxScreen({ navigation, route }: any) {
   const [messages] = useState([
@@ -29,6 +30,8 @@ export default function InboxScreen({ navigation, route }: any) {
     },
   ]);
 
+  const insets = useSafeAreaInsets();
+
   const handleInviteFriends = () => {
     const message = `Need help or want to help people in your neighborhood? Join Local Hero and become my friend: https://localhero.app/download`;
     
@@ -46,8 +49,8 @@ export default function InboxScreen({ navigation, route }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={styles.container} edges={[]}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.headerTitle}>📬 Inbox</Text>
         <Text style={styles.headerSubtitle}>Messages from your community</Text>
       </View>
@@ -115,7 +118,7 @@ export default function InboxScreen({ navigation, route }: any) {
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
