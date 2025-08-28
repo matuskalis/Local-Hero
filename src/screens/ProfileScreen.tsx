@@ -5,10 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { sharedRequests, deleteRequest } from './HomeScreen';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Avatar } from '../ui/components';
 
 export default function ProfileScreen({ navigation, route }: any) {
   const [myRequests, setMyRequests] = useState(sharedRequests.filter(req => req.isOwn));
@@ -58,6 +60,30 @@ export default function ProfileScreen({ navigation, route }: any) {
     navigation.navigate('MainTabs', { screen: 'Post' });
   };
 
+  const handleProfilePicturePress = () => {
+    Alert.alert(
+      'Change Profile Picture',
+      'Choose an option:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Take Photo', 
+          onPress: () => {
+            // In a real app, this would open camera
+            Alert.alert('Camera', 'This would open your camera to take a photo');
+          }
+        },
+        { 
+          text: 'Choose from Library', 
+          onPress: () => {
+            // In a real app, this would open photo library
+            Alert.alert('Photo Library', 'This would open your photo library to select a photo');
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       {/* White Header */}
@@ -78,9 +104,12 @@ export default function ProfileScreen({ navigation, route }: any) {
       <ScrollView style={styles.content}>
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
+            <TouchableOpacity
+              style={styles.avatar}
+              onPress={handleProfilePicturePress}
+            >
               <Ionicons name="person" size={64} color="white" />
-            </View>
+            </TouchableOpacity>
             <Text style={styles.userName}>{userName}</Text>
             <Text style={styles.userLocation}>📍 Melstone, MT</Text>
           </View>
@@ -116,47 +145,57 @@ export default function ProfileScreen({ navigation, route }: any) {
             </View>
           ) : (
             myRequests.map((request) => (
-              <View key={request.id} style={styles.requestCard}>
-                <TouchableOpacity
-                  style={styles.requestContent}
-                  onPress={() => handleRequestPress(request)}
-                >
-                  <View style={styles.requestHeader}>
-                    <Text style={styles.requestBody}>{request.body}</Text>
-                    <TouchableOpacity
-                      style={styles.deleteButton}
-                      onPress={() => handleDeleteRequest(request)}
-                    >
-                      <Ionicons name="trash" size={24} color="#e74c3c" />
-                    </TouchableOpacity>
+              <TouchableOpacity
+                key={request.id}
+                style={styles.requestCard}
+                onPress={() => handleRequestPress(request)}
+              >
+                <View style={styles.requestHeader}>
+                  <View style={styles.requestLeft}>
+                    <View style={styles.requestTitleRow}>
+                      <Avatar 
+                        size="small" 
+                        name={request.userName}
+                        style={styles.requestAvatar}
+                      />
+                      <Text style={styles.requestTitle}>{request.body}</Text>
+                    </View>
+                    <Text style={styles.requestTime}>{request.createdAt}</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.requestFooter}>
+                  <View style={styles.requestMeta}>
+                    <Ionicons name="time" size={20} color="#4D4D4D" />
+                    <Text style={styles.requestMetaText}>{request.when}</Text>
                   </View>
                   
-                  <View style={styles.requestFooter}>
-                    <View style={styles.requestMeta}>
-                      <Ionicons name="time" size={20} color="#34495e" />
-                      <Text style={styles.requestMetaText}>{request.when}</Text>
-                    </View>
-                    
-                    <View style={styles.requestMeta}>
-                      <Ionicons 
-                        name={request.visibility === 'public' ? 'globe' : 'people'} 
-                        size={20} 
-                        color="#34495e" 
-                      />
-                      <Text style={styles.requestMetaText}>
-                        {request.visibility === 'public' ? 'Public' : 'Friends'}
-                      </Text>
-                    </View>
-                    
-                    <View style={styles.requestMeta}>
-                      <Ionicons name="chatbubble" size={20} color="#34495e" />
-                      <Text style={styles.requestMetaText}>
-                        Waiting for help...
-                      </Text>
-                    </View>
+                  <View style={styles.requestMeta}>
+                    <Ionicons 
+                      name={request.visibility === 'public' ? 'globe' : 'people'} 
+                      size={20} 
+                      color="#4D4D4D" 
+                    />
+                    <Text style={styles.requestMetaText}>
+                      {request.visibility === 'public' ? 'Public' : 'Friends'}
+                    </Text>
                   </View>
+                  
+                  <View style={styles.requestMeta}>
+                    <Ionicons name="location" size={20} color="#4D4D4D" />
+                    <Text style={styles.requestMetaText}>{request.community}</Text>
+                  </View>
+                </View>
+                
+                {/* Delete Button */}
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => handleDeleteRequest(request)}
+                >
+                  <Ionicons name="trash-outline" size={20} color="#E53E3E" />
+                  <Text style={styles.deleteButtonText}>Delete Request</Text>
                 </TouchableOpacity>
-              </View>
+              </TouchableOpacity>
             ))
           )}
         </View>
@@ -169,6 +208,8 @@ export default function ProfileScreen({ navigation, route }: any) {
             <Ionicons name="add-circle" size={32} color="white" />
             <Text style={styles.actionButtonText}>Create New Request</Text>
           </TouchableOpacity>
+          
+
         </View>
       </ScrollView>
 
@@ -318,17 +359,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   requestCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  requestContent: {
+    backgroundColor: '#FFFFFF',
     padding: 24,
+    borderRadius: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   requestHeader: {
     flexDirection: 'row',
@@ -336,32 +372,67 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 16,
   },
-  requestBody: {
-    fontSize: 20,
-    color: '#2c3e50',
-    lineHeight: 28,
+  requestLeft: {
     flex: 1,
-    marginRight: 16,
+    marginRight: 20,
+  },
+  requestTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 12,
+  },
+  requestAvatar: {
+    marginRight: 8,
+  },
+  requestTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    flex: 1,
+  },
+  requestTime: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#6B7280',
   },
   deleteButton: {
-    padding: 12,
-    backgroundColor: '#fdf2f2',
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    gap: 8,
+  },
+  deleteButtonText: {
+    color: '#E53E3E',
+    fontSize: 16,
+    fontWeight: '600',
   },
   requestFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   requestMeta: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 12,
+    minWidth: '30%',
   },
   requestMetaText: {
-    fontSize: 18,
-    color: '#34495e',
-    marginLeft: 8,
+    fontSize: 16,
     fontWeight: '500',
+    color: '#4D4D4D',
+    marginLeft: 12,
+    flexWrap: 'wrap',
+    flex: 1,
   },
   emptyState: {
     alignItems: 'center',
@@ -409,6 +480,7 @@ const styles = StyleSheet.create({
     color: 'white',
     marginLeft: 16,
   },
+
   popupOverlay: {
     position: 'absolute',
     top: 0,

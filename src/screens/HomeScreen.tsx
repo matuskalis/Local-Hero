@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Avatar } from '../ui/components';
 
 // Shared state for requests - this will be passed between screens
 export let sharedRequests: any[] = [
@@ -175,24 +176,18 @@ export default function HomeScreen({ navigation, route }: any) {
                 <View style={styles.requestHeader}>
                   <View style={styles.requestLeft}>
                     <View style={styles.requestTitleRow}>
-                      <Text style={styles.categoryIcon}>
-                        {getCategoryIcon(request.category)}
-                      </Text>
-                      <Text style={styles.requestUserName}>
-                        {request.isOwn ? 'You' : request.userName}
-                      </Text>
+                      <Avatar 
+                        size="small" 
+                        name={request.userName}
+                        style={styles.requestAvatar}
+                      />
+                      <Text style={styles.requestTitle}>{request.body}</Text>
                     </View>
                     <Text style={styles.requestTime}>{request.createdAt}</Text>
                   </View>
                   
-                  {request.isOwn && (
-                    <View style={styles.ownRequestBadge}>
-                      <Text style={styles.ownRequestText}>Your Request</Text>
-                    </View>
-                  )}
+
                 </View>
-                
-                <Text style={styles.requestBody}>{request.body}</Text>
                 
                 <View style={styles.requestFooter}>
                   <View style={styles.requestMeta}>
@@ -360,6 +355,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     gap: 12,
+  },
+  requestAvatar: {
+    marginRight: 8,
   },
   categoryIcon: {
     fontSize: 24,

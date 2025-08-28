@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Avatar } from '../ui/components';
 
 interface Request {
   id: number;
@@ -104,6 +105,19 @@ export default function RequestDetailScreen({ navigation, route }: any) {
     }
   };
 
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'snow':
+        return '❄️';
+      case 'grocery':
+        return '🛒';
+      case 'yard':
+        return '🌱';
+      default:
+        return '📋';
+    }
+  };
+
   const handleAcceptOffer = (offerId: string) => {
     Alert.alert(
       'Accept Offer',
@@ -160,42 +174,46 @@ export default function RequestDetailScreen({ navigation, route }: any) {
         {/* Request Card */}
         <View style={styles.requestCard}>
           <View style={styles.requestHeader}>
-            <Text style={styles.requestUserName}>
-              {request.isOwn ? 'You' : request.userName}
-            </Text>
-            <Text style={styles.requestTime}>{request.createdAt}</Text>
-          </View>
-          
-          <Text style={styles.requestBody}>{request.body}</Text>
-          
-          <View style={styles.requestMeta}>
-            <View style={styles.metaItem}>
-              <Ionicons name="time" size={20} color="#2c3e50" />
-              <Text style={styles.metaText}>{request.when}</Text>
+            <View style={styles.requestLeft}>
+              <View style={styles.requestTitleRow}>
+                <Avatar 
+                  size="medium" 
+                  name={request.userName}
+                  style={styles.requestAvatar}
+                />
+                <Text style={styles.categoryIcon}>
+                  {getCategoryIcon(request.category)}
+                </Text>
+                <Text style={styles.requestTitle}>{request.body}</Text>
+              </View>
+              <Text style={styles.requestTime}>{request.createdAt}</Text>
             </View>
             
-            <View style={styles.metaItem}>
+
+          </View>
+          
+          <View style={styles.requestFooter}>
+            <View style={styles.requestMeta}>
+              <Ionicons name="time" size={20} color="#4D4D4D" />
+              <Text style={styles.requestMetaText}>{request.when}</Text>
+            </View>
+            
+            <View style={styles.requestMeta}>
               <Ionicons 
                 name={request.visibility === 'public' ? 'globe' : 'people'} 
                 size={20} 
-                color="#2c3e50" 
+                color="#4D4D4D" 
               />
-              <Text style={styles.metaText}>
+              <Text style={styles.requestMetaText}>
                 {request.visibility === 'public' ? 'Public' : 'Friends'}
               </Text>
             </View>
             
-            <View style={styles.metaItem}>
-              <Ionicons name="location" size={20} color="#2c3e50" />
-              <Text style={styles.metaText}>{request.community}</Text>
+            <View style={styles.requestMeta}>
+              <Ionicons name="location" size={20} color="#4D4D4D" />
+              <Text style={styles.requestMetaText}>{request.community}</Text>
             </View>
           </View>
-
-          {request.isOwn && (
-            <View style={styles.ownRequestBadge}>
-              <Text style={styles.ownRequestText}>Your Request</Text>
-            </View>
-          )}
         </View>
 
         {/* Offers Section */}
@@ -336,38 +354,66 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  requestUserName: {
-    fontSize: 22,
+  requestLeft: {
+    flex: 1,
+    marginRight: 20,
+  },
+  requestTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 12,
+  },
+  requestAvatar: {
+    marginRight: 8,
+  },
+  categoryIcon: {
+    fontSize: 24,
+  },
+  requestTitle: {
+    fontSize: 18,
     fontWeight: '600',
-    color: '#2c3e50',
+    color: '#000000',
+    flex: 1,
   },
   requestTime: {
-    fontSize: 18,
-    color: '#7f8c8d',
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#6B7280',
   },
-  requestBody: {
-    fontSize: 20,
-    color: '#2c3e50',
-    lineHeight: 28,
-    marginBottom: 20,
+  requestStatus: {
+    alignItems: 'flex-end',
   },
-  requestMeta: {
+  statusBadge: {
+    backgroundColor: '#FF9500',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  requestFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     flexWrap: 'wrap',
   },
-  metaItem: {
+  requestMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
     minWidth: '30%',
   },
-  metaText: {
-    fontSize: 18,
-    color: '#34495e',
-    marginLeft: 8,
+  requestMetaText: {
+    fontSize: 16,
     fontWeight: '500',
+    color: '#4D4D4D',
+    marginLeft: 12,
+    flexWrap: 'wrap',
+    flex: 1,
   },
   ownRequestBadge: {
     position: 'absolute',
@@ -526,3 +572,4 @@ const styles = StyleSheet.create({
     color: '#7f8c8d',
   },
 });
+

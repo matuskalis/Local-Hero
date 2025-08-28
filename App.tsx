@@ -104,9 +104,9 @@ export default function App() {
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="MainTabs" component={MainTabs} initialParams={{ userName }} />
-          <Stack.Screen name="Profile" component={ProfileScreen} initialParams={{ userName }} />
-          <Stack.Screen name="RequestDetail" component={RequestDetailScreen} initialParams={{ userName }} />
-          <Stack.Screen name="MyRequests" component={MyRequestsScreen} initialParams={{ userName }} />
+                              <Stack.Screen name="Profile" component={ProfileScreen} initialParams={{ userName }} />
+                    <Stack.Screen name="RequestDetail" component={RequestDetailScreen} initialParams={{ userName }} />
+                    <Stack.Screen name="MyRequests" component={MyRequestsScreen} initialParams={{ userName }} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

@@ -6,3 +6,4 @@ export { Badge } from './Badge';
 export { InputField } from './InputField';
 export { ActionSheet } from './ActionSheet';
 export type { ActionSheetAction, ActionSheetProps } from './ActionSheet';
+export { default as Avatar } from './Avatar';

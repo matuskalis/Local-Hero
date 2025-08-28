@@ -1,16 +1,13 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  Modal,
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import BottomSheet, { BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
-import * as Haptics from 'expo-haptics';
-import { theme } from '../theme';
-import { PrimaryButton, SecondaryButton } from './index';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -40,66 +37,30 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
   showCancel = true,
   cancelTitle = 'Cancel',
 }) => {
-  const bottomSheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['50%', '75%'], []);
-
   const handleClose = useCallback(() => {
-    bottomSheetRef.current?.close();
     onClose();
   }, [onClose]);
 
   const handleActionPress = useCallback((action: ActionSheetAction) => {
-    // Haptic feedback
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
-    // Close sheet and execute action
+    // Close modal and execute action
     handleClose();
     action.onPress();
   }, [handleClose]);
 
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop
-        {...props}
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-        opacity={0.5}
-      />
-    ),
-    []
-  );
-
-  const handleSheetChanges = useCallback((index: number) => {
-    if (index === -1) {
-      onClose();
-    }
-  }, [onClose]);
-
-  // Auto-open when visible
-  React.useEffect(() => {
-    if (isVisible) {
-      bottomSheetRef.current?.expand();
-    } else {
-      bottomSheetRef.current?.close();
-    }
-  }, [isVisible]);
-
   if (!isVisible) return null;
 
   return (
-    <BottomSheet
-      ref={bottomSheetRef}
-      index={0}
-      snapPoints={snapPoints}
-      onChange={handleSheetChanges}
-      backdropComponent={renderBackdrop}
-      enablePanDownToClose
-      backgroundStyle={styles.bottomSheetBackground}
-      handleIndicatorStyle={styles.handleIndicator}
+    <Modal
+      visible={isVisible}
+      transparent
+      animationType="slide"
+      onRequestClose={handleClose}
     >
-      <BottomSheetView style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.content}>
+            {/* Header */}
+            <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
           {message && <Text style={styles.message}>{message}</Text>}
         </View>
@@ -109,13 +70,23 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
           {actions.map((action, index) => {
             if (action.variant === 'primary') {
               return (
-                <PrimaryButton
+                <TouchableOpacity
                   key={index}
-                  title={action.title}
+                  style={[styles.primaryButton, styles.actionButton]}
                   onPress={() => handleActionPress(action)}
-                  fullWidth
-                  style={styles.actionButton}
-                />
+                  accessibilityLabel={action.title}
+                  accessibilityRole="button"
+                >
+                  {action.icon && (
+                    <Ionicons 
+                      name={action.icon} 
+                      size={24} 
+                      color="white" 
+                      style={styles.actionIcon}
+                    />
+                  )}
+                  <Text style={styles.primaryButtonText}>{action.title}</Text>
+                </TouchableOpacity>
               );
             } else if (action.variant === 'destructive') {
               return (
@@ -130,7 +101,7 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
                     <Ionicons 
                       name={action.icon} 
                       size={24} 
-                      color={theme.colors.error} 
+                      color="#E53E3E" 
                       style={styles.actionIcon}
                     />
                   )}
@@ -139,13 +110,23 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
               );
             } else {
               return (
-                <SecondaryButton
+                <TouchableOpacity
                   key={index}
-                  title={action.title}
+                  style={[styles.secondaryButton, styles.actionButton]}
                   onPress={() => handleActionPress(action)}
-                  fullWidth
-                  style={styles.actionButton}
-                />
+                  accessibilityLabel={action.title}
+                  accessibilityRole="button"
+                >
+                  {action.icon && (
+                    <Ionicons 
+                      name={action.icon} 
+                      size={24} 
+                      color="#2BB673" 
+                      style={styles.actionIcon}
+                    />
+                  )}
+                  <Text style={styles.secondaryButtonText}>{action.title}</Text>
+                </TouchableOpacity>
               );
             }
           })}
@@ -163,84 +144,124 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
               <Text style={styles.cancelButtonText}>{cancelTitle}</Text>
             </TouchableOpacity>
           </View>
-        )}
-      </BottomSheetView>
-    </BottomSheet>
+            )}
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  bottomSheetBackground: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: theme.borderRadius.xl,
-    borderTopRightRadius: theme.borderRadius.xl,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
   },
-  handleIndicator: {
-    backgroundColor: theme.colors.border,
-    width: 40,
-    height: 4,
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 24,
+    maxHeight: '80%',
   },
   content: {
     flex: 1,
-    padding: theme.spacing.lg,
+    padding: 24,
   },
   header: {
     alignItems: 'center',
-    marginBottom: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.md,
+    marginBottom: 24,
+    paddingHorizontal: 16,
   },
   title: {
-    ...theme.typography.title,
-    color: theme.colors.textPrimary,
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#000000',
     textAlign: 'center',
-    marginBottom: theme.spacing.sm,
+    marginBottom: 12,
   },
   message: {
-    ...theme.typography.body,
-    color: theme.colors.textSecondary,
+    fontSize: 18,
+    color: '#4D4D4D',
     textAlign: 'center',
     lineHeight: 24,
   },
   actions: {
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.xl,
+    gap: 16,
+    marginBottom: 24,
   },
   actionButton: {
     marginHorizontal: 0,
   },
+  primaryButton: {
+    backgroundColor: '#2BB673',
+    borderRadius: 25,
+    minHeight: 60,
+    paddingHorizontal: 32,
+    paddingVertical: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: 'white',
+    textAlign: 'center',
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#2BB673',
+    borderRadius: 25,
+    minHeight: 60,
+    paddingHorizontal: 32,
+    paddingVertical: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2BB673',
+    textAlign: 'center',
+  },
   destructiveButton: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: theme.colors.error,
-    borderRadius: theme.borderRadius.pill,
+    borderColor: '#E53E3E',
+    borderRadius: 25,
     minHeight: 60,
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: 32,
+    paddingVertical: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   destructiveButtonText: {
-    ...theme.typography.button,
-    color: theme.colors.error,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#E53E3E',
     textAlign: 'center',
   },
   actionIcon: {
-    marginRight: theme.spacing.sm,
+    marginRight: 12,
   },
   cancelSection: {
     borderTopWidth: 1,
-    borderTopColor: theme.colors.borderLight,
-    paddingTop: theme.spacing.lg,
+    borderTopColor: '#E5E7EB',
+    paddingTop: 24,
   },
   cancelButton: {
-    paddingVertical: theme.spacing.lg,
+    paddingVertical: 20,
     alignItems: 'center',
     minHeight: 44,
   },
   cancelButtonText: {
-    ...theme.typography.body,
-    color: theme.colors.textSecondary,
+    fontSize: 18,
+    color: '#4D4D4D',
     fontWeight: '600',
   },
 });

@@ -9,6 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { sharedRequests } from './HomeScreen';
+import { Avatar } from '../ui/components';
 
 export default function MyRequestsScreen({ navigation, route }: any) {
   const [myRequests, setMyRequests] = useState(sharedRequests.filter(req => req.isOwn));
@@ -29,6 +30,17 @@ export default function MyRequestsScreen({ navigation, route }: any) {
   const handleRequestPress = (request: any) => {
     // Navigate to request detail or show more info
     console.log('Request details:', request);
+  };
+
+  const handleDeleteRequest = (requestId: number) => {
+    // Remove from shared state
+    const updatedRequests = myRequests.filter(req => req.id !== requestId);
+    setMyRequests(updatedRequests);
+    
+    // Update the shared requests array in HomeScreen
+    const globalRequests = sharedRequests.filter(req => req.id !== requestId);
+    // Note: In a real app, you'd call a service to delete from database
+    console.log('Request deleted:', requestId);
   };
 
   const getCategoryIcon = (category: string) => {
@@ -89,6 +101,11 @@ export default function MyRequestsScreen({ navigation, route }: any) {
                 <View style={styles.requestHeader}>
                   <View style={styles.requestLeft}>
                     <View style={styles.requestTitleRow}>
+                      <Avatar 
+                        size="small" 
+                        name={request.userName}
+                        style={styles.requestAvatar}
+                      />
                       <Text style={styles.categoryIcon}>
                         {getCategoryIcon(request.category)}
                       </Text>
@@ -96,11 +113,7 @@ export default function MyRequestsScreen({ navigation, route }: any) {
                     </View>
                     <Text style={styles.requestTime}>{request.createdAt}</Text>
                   </View>
-                  <View style={styles.requestStatus}>
-                    <View style={styles.statusBadge}>
-                      <Text style={styles.statusText}>Open</Text>
-                    </View>
-                  </View>
+
                 </View>
                 
                 <View style={styles.requestFooter}>
@@ -125,6 +138,15 @@ export default function MyRequestsScreen({ navigation, route }: any) {
                     <Text style={styles.requestMetaText}>{request.community}</Text>
                   </View>
                 </View>
+                
+                {/* Delete Button */}
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => handleDeleteRequest(request.id)}
+                >
+                  <Ionicons name="trash-outline" size={20} color="#E53E3E" />
+                  <Text style={styles.deleteButtonText}>Delete Request</Text>
+                </TouchableOpacity>
               </TouchableOpacity>
             ))}
           </View>
@@ -251,6 +273,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     gap: 12,
   },
+  requestAvatar: {
+    marginRight: 8,
+  },
   categoryIcon: {
     fontSize: 24,
   },
@@ -298,5 +323,23 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flexWrap: 'wrap',
     flex: 1,
+  },
+  deleteButton: {
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    gap: 8,
+  },
+  deleteButtonText: {
+    color: '#E53E3E',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
