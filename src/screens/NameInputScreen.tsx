@@ -37,7 +37,7 @@ export default function NameInputScreen({ onNameSubmit }: NameInputScreenProps) 
           </View>
 
           <View style={styles.formSection}>
-            <Text style={styles.label}>What\'s your name?</Text>
+            <Text style={styles.label}>What's your name?</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter your name"

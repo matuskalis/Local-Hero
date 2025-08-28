@@ -4,12 +4,16 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+// import { NotificationProvider } from './src/ui/notifications/NotificationProvider';
 
 import NameInputScreen from './src/screens/NameInputScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import PostScreen from './src/screens/PostScreen';
 import InboxScreen from './src/screens/InboxScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import RequestDetailScreen from './src/screens/RequestDetailScreen';
+import MyRequestsScreen from './src/screens/MyRequestsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -33,17 +37,18 @@ function MainTabs({ route }: any) {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#27ae60',
-        tabBarInactiveTintColor: '#7f8c8d',
+        tabBarActiveTintColor: '#2BB673',
+        tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
           height: 80,
           paddingBottom: 16,
           paddingTop: 12,
-          backgroundColor: '#2c3e50',
-          borderTopWidth: 0,
+          backgroundColor: '#FFFFFF',
+          borderTopWidth: 1,
+          borderTopColor: '#E5E7EB',
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.2,
+          shadowOpacity: 0.1,
           shadowRadius: 8,
           elevation: 8,
         },
@@ -95,10 +100,13 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      <StatusBar style="dark" />
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="MainTabs" component={MainTabs} initialParams={{ userName }} />
           <Stack.Screen name="Profile" component={ProfileScreen} initialParams={{ userName }} />
+          <Stack.Screen name="RequestDetail" component={RequestDetailScreen} initialParams={{ userName }} />
+          <Stack.Screen name="MyRequests" component={MyRequestsScreen} initialParams={{ userName }} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

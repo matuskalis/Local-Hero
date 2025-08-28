@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { addRequest } from './HomeScreen';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PostScreen({ navigation, route }: any) {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
@@ -19,7 +19,7 @@ export default function PostScreen({ navigation, route }: any) {
   const [community, setCommunity] = useState('Melstone, MT');
   const [bodyHeight, setBodyHeight] = useState(60);
   const userName = route?.params?.userName || 'Your Name';
-  const insets = useSafeAreaInsets();
+
 
   const handleSubmit = () => {
     if (!body.trim() || !community.trim()) {
@@ -64,9 +64,13 @@ export default function PostScreen({ navigation, route }: any) {
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-          <Text style={styles.headerTitle}>📝 Create New Request</Text>
-          <Text style={styles.headerSubtitle}>Help your community know what you need</Text>
+        {/* White Header */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>📝 Create New Request</Text>
+            <Text style={styles.headerSubtitle}>Help your community know what you need</Text>
+          </View>
+          <View style={styles.headerDivider} />
         </View>
 
         <View style={styles.formContainer}>
@@ -181,20 +185,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    backgroundColor: '#2c3e50',
-    padding: 28,
+    backgroundColor: '#FFFFFF',
+    paddingTop: 50,
+  },
+  headerContent: {
     alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+  headerDivider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 24,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#000000',
     marginBottom: 8,
     textAlign: 'center',
   },
   headerSubtitle: {
     fontSize: 20,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#4D4D4D',
     textAlign: 'center',
   },
   formContainer: {

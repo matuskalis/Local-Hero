@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Shared state for requests - this will be passed between screens
 export let sharedRequests: any[] = [
@@ -22,6 +22,7 @@ export let sharedRequests: any[] = [
     createdAt: '2 hours ago',
     isOwn: false,
     category: 'snow',
+    status: 'open',
   },
   {
     id: 2,
@@ -33,6 +34,7 @@ export let sharedRequests: any[] = [
     createdAt: '1 day ago',
     isOwn: false,
     category: 'grocery',
+    status: 'open',
   },
   {
     id: 3,
@@ -44,6 +46,7 @@ export let sharedRequests: any[] = [
     createdAt: '3 days ago',
     isOwn: true,
     category: 'yard',
+    status: 'open',
   },
 ];
 
@@ -53,6 +56,7 @@ export const addRequest = (request: any) => {
     id: Date.now(),
     createdAt: 'Just now',
     isOwn: true,
+    status: 'open',
   };
   sharedRequests.unshift(newRequest);
 };
@@ -68,7 +72,6 @@ export default function HomeScreen({ navigation, route }: any) {
   const [requests, setRequests] = useState(sharedRequests);
   const [refreshing, setRefreshing] = useState(false);
   const userName = route?.params?.userName || 'Your Name';
-  const insets = useSafeAreaInsets();
 
   // Refresh requests from shared state
   const refreshRequests = () => {
@@ -96,20 +99,46 @@ export default function HomeScreen({ navigation, route }: any) {
   };
 
   const handleRequestPress = (request: any) => {
-    // Simple info display for now
-    console.log('Request details:', request);
+    // Navigate to request detail screen
+    navigation.navigate('RequestDetail', { request, userName });
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'grocery':
+        return '🛒';
+      case 'snow':
+        return '❄️';
+      case 'yard':
+        return '🌱';
+      default:
+        return '📋';
+    }
   };
 
   return (
     <SafeAreaView style={styles.container} edges={[]}>
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <Text style={styles.headerTitle}>Local Hero - Melstone</Text>
-        <TouchableOpacity
-          style={styles.profileButton}
-          onPress={handleProfilePress}
-        >
-          <Ionicons name="person" size={32} color="white" />
-        </TouchableOpacity>
+      {/* White Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>Requests</Text>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              style={styles.myRequestsButton}
+              onPress={() => navigation.navigate('MyRequests', { userName })}
+            >
+              <Ionicons name="list" size={24} color="#2BB673" />
+              <Text style={styles.myRequestsText}>My Requests</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.profileButton}
+              onPress={handleProfilePress}
+            >
+              <Ionicons name="person" size={32} color="#2BB673" />
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.headerDivider} />
       </View>
 
       <ScrollView
@@ -145,18 +174,29 @@ export default function HomeScreen({ navigation, route }: any) {
               >
                 <View style={styles.requestHeader}>
                   <View style={styles.requestLeft}>
-                    <Text style={styles.requestUserName}>
-                      {request.isOwn ? 'You' : request.userName}
-                    </Text>
+                    <View style={styles.requestTitleRow}>
+                      <Text style={styles.categoryIcon}>
+                        {getCategoryIcon(request.category)}
+                      </Text>
+                      <Text style={styles.requestUserName}>
+                        {request.isOwn ? 'You' : request.userName}
+                      </Text>
+                    </View>
                     <Text style={styles.requestTime}>{request.createdAt}</Text>
                   </View>
+                  
+                  {request.isOwn && (
+                    <View style={styles.ownRequestBadge}>
+                      <Text style={styles.ownRequestText}>Your Request</Text>
+                    </View>
+                  )}
                 </View>
                 
                 <Text style={styles.requestBody}>{request.body}</Text>
                 
                 <View style={styles.requestFooter}>
                   <View style={styles.requestMeta}>
-                    <Ionicons name="time" size={20} color="#2c3e50" />
+                    <Ionicons name="time" size={20} color="#4D4D4D" />
                     <Text style={styles.requestMetaText}>{request.when}</Text>
                   </View>
                   
@@ -164,7 +204,7 @@ export default function HomeScreen({ navigation, route }: any) {
                     <Ionicons 
                       name={request.visibility === 'public' ? 'globe' : 'people'} 
                       size={20} 
-                      color="#2c3e50" 
+                      color="#4D4D4D" 
                     />
                     <Text style={styles.requestMetaText}>
                       {request.visibility === 'public' ? 'Public' : 'Friends'}
@@ -172,16 +212,10 @@ export default function HomeScreen({ navigation, route }: any) {
                   </View>
                   
                   <View style={styles.requestMeta}>
-                    <Ionicons name="location" size={20} color="#2c3e50" />
+                    <Ionicons name="location" size={20} color="#4D4D4D" />
                     <Text style={styles.requestMetaText}>{request.community}</Text>
                   </View>
                 </View>
-
-                {request.isOwn && (
-                  <View style={styles.ownRequestBadge}>
-                    <Text style={styles.ownRequestText}>Your Request</Text>
-                  </View>
-                )}
               </TouchableOpacity>
             ))
           )}
@@ -203,26 +237,54 @@ export default function HomeScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F9FAFB',
   },
   header: {
-    backgroundColor: '#2c3e50',
-    padding: 24,
+    backgroundColor: '#FFFFFF',
+    paddingTop: 50,
+  },
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+  headerDivider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 24,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#000000',
     flex: 1,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  myRequestsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E6F7EF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
+    gap: 12,
+  },
+  myRequestsText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2BB673',
   },
   profileButton: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#E6F7EF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -230,79 +292,94 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   welcomeSection: {
-    backgroundColor: 'white',
-    padding: 28,
-    margin: 20,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: '#FFFFFF',
+    padding: 32,
+    margin: 0,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   welcomeTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#2c3e50',
+    color: '#000000',
     marginBottom: 12,
     textAlign: 'center',
   },
   welcomeSubtitle: {
-    fontSize: 20,
-    color: '#34495e',
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#4D4D4D',
     textAlign: 'center',
     lineHeight: 28,
   },
   requestsSection: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    paddingHorizontal: 24,
+    marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 20,
+    color: '#000000',
+    marginBottom: 24,
   },
   requestCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
     padding: 24,
-    borderRadius: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    borderRadius: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   ownRequestCard: {
     borderLeftWidth: 6,
-    borderLeftColor: '#27ae60',
+    borderLeftColor: '#2BB673',
+  },
+  ownRequestBadge: {
+    backgroundColor: '#2BB673',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
+  },
+  ownRequestText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   requestHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 16,
   },
   requestLeft: {
     flex: 1,
   },
+  requestTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 12,
+  },
+  categoryIcon: {
+    fontSize: 24,
+  },
   requestUserName: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '600',
-    color: '#2c3e50',
-    marginBottom: 6,
+    color: '#000000',
   },
   requestTime: {
     fontSize: 18,
-    color: '#7f8c8d',
+    fontWeight: '500',
+    color: '#6B7280',
   },
   requestBody: {
-    fontSize: 20,
-    color: '#2c3e50',
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#000000',
     lineHeight: 28,
-    marginBottom: 20,
-    flexWrap: 'wrap',
+    marginBottom: 24,
   },
   requestFooter: {
     flexDirection: 'row',
@@ -313,68 +390,56 @@ const styles = StyleSheet.create({
   requestMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
     minWidth: '30%',
   },
   requestMetaText: {
     fontSize: 18,
-    color: '#34495e',
-    marginLeft: 8,
     fontWeight: '500',
+    color: '#4D4D4D',
+    marginLeft: 12,
     flexWrap: 'wrap',
     flex: 1,
   },
-  ownRequestBadge: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    backgroundColor: '#27ae60',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
-  },
-  ownRequestText: {
-    fontSize: 14,
-    color: 'white',
-    fontWeight: '600',
-  },
   emptyState: {
     alignItems: 'center',
-    padding: 48,
-    backgroundColor: 'white',
-    borderRadius: 16,
+    padding: 32,
+    backgroundColor: '#FFFFFF',
+    margin: 0,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   emptyText: {
     fontSize: 22,
-    fontWeight: '600',
-    color: '#2c3e50',
+    fontWeight: 'bold',
+    color: '#000000',
     marginBottom: 12,
   },
   emptySubtext: {
     fontSize: 18,
-    color: '#7f8c8d',
+    fontWeight: '500',
+    color: '#4D4D4D',
     textAlign: 'center',
     lineHeight: 26,
   },
   helpSection: {
-    paddingHorizontal: 20,
-    marginBottom: 40,
+    paddingHorizontal: 24,
+    marginBottom: 32,
   },
   helpCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
     padding: 24,
-    borderRadius: 16,
+    borderRadius: 20,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    margin: 0,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   helpText: {
-    fontSize: 20,
-    color: '#2c3e50',
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#000000',
     lineHeight: 28,
-    fontWeight: '500',
   },
 });

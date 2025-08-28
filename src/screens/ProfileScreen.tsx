@@ -8,14 +8,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { sharedRequests, deleteRequest } from './HomeScreen';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen({ navigation, route }: any) {
   const [myRequests, setMyRequests] = useState(sharedRequests.filter(req => req.isOwn));
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [requestToDelete, setRequestToDelete] = useState<any>(null);
   const userName = route?.params?.userName || 'Your Name';
-  const insets = useSafeAreaInsets();
+
 
   // Refresh when screen comes into focus
   useEffect(() => {
@@ -60,15 +60,19 @@ export default function ProfileScreen({ navigation, route }: any) {
 
   return (
     <SafeAreaView style={styles.container} edges={[]}>
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={handleBackPress}
-        >
-          <Ionicons name="arrow-back" size={28} color="white" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>👤 Profile</Text>
-        <View style={styles.headerSpacer} />
+      {/* White Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={handleBackPress}
+          >
+            <Ionicons name="arrow-back" size={28} color="#2BB673" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>👤 Profile</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+        <View style={styles.headerDivider} />
       </View>
 
       <ScrollView style={styles.content}>
@@ -204,24 +208,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   header: {
-    backgroundColor: '#2c3e50',
-    padding: 28,
+    backgroundColor: '#FFFFFF',
+    paddingTop: 50,
+  },
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+  headerDivider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 24,
   },
   backButton: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#000000',
     flex: 1,
     textAlign: 'center',
   },

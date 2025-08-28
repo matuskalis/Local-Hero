@@ -8,7 +8,7 @@ import {
   Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function InboxScreen({ navigation, route }: any) {
   const [messages] = useState([
@@ -30,7 +30,7 @@ export default function InboxScreen({ navigation, route }: any) {
     },
   ]);
 
-  const insets = useSafeAreaInsets();
+
 
   const handleInviteFriends = () => {
     const message = `Need help or want to help people in your neighborhood? Join Local Hero and become my friend: https://localhero.app/download`;
@@ -50,9 +50,13 @@ export default function InboxScreen({ navigation, route }: any) {
 
   return (
     <SafeAreaView style={styles.container} edges={[]}>
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <Text style={styles.headerTitle}>📬 Inbox</Text>
-        <Text style={styles.headerSubtitle}>Messages from your community</Text>
+      {/* White Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>📬 Inbox</Text>
+          <Text style={styles.headerSubtitle}>Messages from your community</Text>
+        </View>
+        <View style={styles.headerDivider} />
       </View>
 
       <ScrollView style={styles.content}>
@@ -128,19 +132,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   header: {
-    backgroundColor: '#2c3e50',
-    padding: 28,
+    backgroundColor: '#FFFFFF',
+    paddingTop: 50,
+  },
+  headerContent: {
     alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+  headerDivider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 24,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#000000',
     marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 20,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#4D4D4D',
   },
   content: {
     flex: 1,
