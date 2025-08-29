@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { sharedRequests, deleteRequest } from './HomeScreen';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from '../ui/components';
 import { useNotify } from '../ui/notifications/NotificationProvider';
@@ -15,46 +14,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ProfileScreen({ navigation, route }: any) {
   const notify = useNotify();
-  const [myRequests, setMyRequests] = useState(sharedRequests.filter(req => req.isOwn));
-  const [showDeletePopup, setShowDeletePopup] = useState(false);
-  const [requestToDelete, setRequestToDelete] = useState<any>(null);
   const userName = route?.params?.userName || 'Your Name';
 
 
-  // Refresh when screen comes into focus
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      setMyRequests(sharedRequests.filter(req => req.isOwn));
-    });
-    return unsubscribe;
-  }, [navigation]);
-
   const handleBackPress = () => {
     navigation.goBack();
-  };
-
-  const handleDeleteRequest = (request: any) => {
-    setRequestToDelete(request);
-    setShowDeletePopup(true);
-  };
-
-  const confirmDelete = () => {
-    if (requestToDelete) {
-      deleteRequest(requestToDelete.id);
-      setMyRequests(sharedRequests.filter(req => req.isOwn));
-      setShowDeletePopup(false);
-      setRequestToDelete(null);
-    }
-  };
-
-  const cancelDelete = () => {
-    setShowDeletePopup(false);
-    setRequestToDelete(null);
-  };
-
-  const handleRequestPress = (request: any) => {
-    // Simple info display
-    console.log('Request details:', request);
   };
 
   const handleCreateNewRequest = () => {
@@ -105,13 +69,11 @@ export default function ProfileScreen({ navigation, route }: any) {
 
         <View style={styles.statsSection}>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{myRequests.length}</Text>
+            <Text style={styles.statNumber}>5</Text>
             <Text style={styles.statLabel}>Requests Posted</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>
-              {myRequests.reduce((sum, req) => sum + (req.responses || 0), 0)}
-            </Text>
+            <Text style={styles.statNumber}>12</Text>
             <Text style={styles.statLabel}>Total Responses</Text>
           </View>
           <View style={styles.statCard}>
@@ -120,73 +82,7 @@ export default function ProfileScreen({ navigation, route }: any) {
           </View>
         </View>
 
-        <View style={styles.requestsSection}>
-          <Text style={styles.sectionTitle}>My Requests 📋</Text>
-          
-          {myRequests.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyEmoji}>📝</Text>
-              <Text style={styles.emptyText}>No requests yet</Text>
-              <Text style={styles.emptySubtext}>
-                Create your first request to get help from the community
-              </Text>
-            </View>
-          ) : (
-            myRequests.map((request) => (
-              <TouchableOpacity
-                key={request.id}
-                style={styles.requestCard}
-                onPress={() => handleRequestPress(request)}
-              >
-                <View style={styles.requestHeader}>
-                  <View style={styles.requestLeft}>
-                    <View style={styles.requestTitleRow}>
-                      <Avatar 
-                        size="small" 
-                        name={request.userName}
-                        style={styles.requestAvatar}
-                      />
-                      <Text style={styles.requestTitle}>{request.body}</Text>
-                    </View>
-                    <Text style={styles.requestTime}>{request.createdAt}</Text>
-                  </View>
-                </View>
-                
-                <View style={styles.requestFooter}>
-                  <View style={styles.requestMeta}>
-                    <Ionicons name="time" size={20} color="#4D4D4D" />
-                    <Text style={styles.requestMetaText}>{request.when}</Text>
-                  </View>
-                  
-                  <View style={styles.requestMeta}>
-                    <Ionicons 
-                      name={request.visibility === 'public' ? 'globe' : 'people'} 
-                      size={20} 
-                      color="#4D4D4D" 
-                    />
-                    <Text style={styles.requestMetaText}>
-                      {request.visibility === 'public' ? 'Public' : 'Friends'}
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.requestMeta}>
-                    <Ionicons name="location" size={20} color="#4D4D4D" />
-                    <Text style={styles.requestMetaText}>{request.community}</Text>
-                  </View>
-                </View>
-                
-                {/* Delete Button */}
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => handleDeleteRequest(request)}
-                >
-                  <Ionicons name="trash-outline" size={20} color="#E53E3E" />
-                  <Text style={styles.deleteButtonText}>Delete Request</Text>
-                </TouchableOpacity>
-              </TouchableOpacity>
-            ))
-          )}
-        </View>
+
 
         <View style={styles.actionsSection}>
           <TouchableOpacity
@@ -229,32 +125,7 @@ export default function ProfileScreen({ navigation, route }: any) {
         </View>
       </ScrollView>
 
-      {/* Delete Confirmation Popup */}
-      {showDeletePopup && (
-        <View style={styles.popupOverlay}>
-          <View style={styles.deletePopup}>
-            <Text style={styles.deleteEmoji}>🗑️</Text>
-            <Text style={styles.deleteTitle}>Delete Request?</Text>
-            <Text style={styles.deleteMessage}>
-              Are you sure you want to delete "{requestToDelete?.body}"? This action cannot be undone.
-            </Text>
-            <View style={styles.deleteButtons}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={cancelDelete}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.confirmDeleteButton}
-                onPress={confirmDelete}
-              >
-                <Text style={styles.confirmDeleteButtonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
+
     </SafeAreaView>
   );
 }
