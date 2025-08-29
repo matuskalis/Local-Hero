@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NotificationProvider } from './src/ui/notifications/NotificationProvider';
 import { StatusBar } from 'expo-status-bar';
 // import { NotificationProvider } from './src/ui/notifications/NotificationProvider';
 
@@ -101,16 +102,18 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <NavigationContainer>
-                <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="MainTabs" component={MainTabs} initialParams={{ userName }} />
-          <Stack.Screen name="Profile" component={ProfileScreen} initialParams={{ userName }} />
-          <Stack.Screen name="RequestDetail" component={RequestDetailScreen} initialParams={{ userName }} />
-          <Stack.Screen name="MyRequests" component={MyRequestsScreen} initialParams={{ userName }} />
-          <Stack.Screen name="Leaderboard" component={LeaderboardScreen} initialParams={{ userName }} />
-        </Stack.Navigator>
-      </NavigationContainer>
+              <StatusBar style="dark" />
+        <NotificationProvider>
+          <NavigationContainer>
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="MainTabs" component={MainTabs} initialParams={{ userName }} />
+              <Stack.Screen name="Profile" component={ProfileScreen} initialParams={{ userName }} />
+              <Stack.Screen name="RequestDetail" component={RequestDetailScreen} initialParams={{ userName }} />
+              <Stack.Screen name="MyRequests" component={MyRequestsScreen} initialParams={{ userName }} />
+              <Stack.Screen name="Leaderboard" component={LeaderboardScreen} initialParams={{ userName }} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </NotificationProvider>
     </SafeAreaProvider>
   );
 }

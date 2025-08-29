@@ -1,297 +1,250 @@
-import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
+  Pressable,
+  Text,
   Animated,
-  TouchableOpacity,
   Dimensions,
-  StatusBar,
+  View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { theme } from '../theme';
 
-const { width: screenWidth } = Dimensions.get('window');
+type NoticeType = 'success' | 'info' | 'warning' | 'error';
+type BannerPayload = { title: string; message?: string; type?: NoticeType; durationMs?: number; };
+type ToastPayload = { message: string; durationMs?: number; };
 
-export type NotificationType = 'success' | 'error' | 'warning' | 'info';
+type Ctx = { banner: (n: BannerPayload) => void; toast: (t: ToastPayload) => void; };
+const NotificationContext = createContext<Ctx | null>(null);
 
-export interface Notification {
-  id: string;
-  type: NotificationType;
-  title?: string;
-  message: string;
-  duration?: number;
-  onPress?: () => void;
+export function useNotify() {
+  const ctx = useContext(NotificationContext);
+  if (!ctx) throw new Error('useNotify must be used inside <NotificationProvider/>');
+  return ctx;
 }
 
-interface NotificationContextType {
-  notify: {
-    banner: (notification: Omit<Notification, 'id'>) => void;
-    toast: (notification: Omit<Notification, 'id'>) => void;
-  };
-  clearNotification: (id: string) => void;
-}
+export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [banner, setBanner] = useState<BannerPayload | null>(null);
+  const [toast, setToast] = useState<ToastPayload | null>(null);
+  const bTimer = useRef<NodeJS.Timeout | null>(null);
+  const tTimer = useRef<NodeJS.Timeout | null>(null);
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+  // Animation values
+  const bannerSlideAnim = useRef(new Animated.Value(-200)).current;
+  const toastFadeAnim = useRef(new Animated.Value(0)).current;
 
-export const useNotifications = () => {
-  const context = useContext(NotificationContext);
-  if (!context) {
-    throw new Error('useNotifications must be used within NotificationProvider');
-  }
-  return context;
-};
-
-interface NotificationProviderProps {
-  children: React.ReactNode;
-}
-
-export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
-  const [banners, setBanners] = useState<Notification[]>([]);
-  const [toasts, setToasts] = useState<Notification[]>([]);
-  const bannerAnimations = useRef<{ [key: string]: Animated.Value }>({});
-  const toastAnimations = useRef<{ [key: string]: Animated.Value }>({});
-
-  const generateId = () => Math.random().toString(36).substr(2, 9);
-
-  const showBanner = (notification: Omit<Notification, 'id'>) => {
-    const id = generateId();
-    const newNotification = { ...notification, id, duration: notification.duration || 5000 };
+  const showBanner = useCallback((n: BannerPayload) => {
+    if (bTimer.current) clearTimeout(bTimer.current);
     
-    setBanners(prev => [...prev, newNotification]);
+    setBanner(n);
     
-    // Animate in
-    const animation = new Animated.Value(-100);
-    bannerAnimations.current[id] = animation;
-    
-    Animated.spring(animation, {
+    // Slide in from top
+    Animated.spring(bannerSlideAnim, {
       toValue: 0,
       useNativeDriver: true,
       tension: 100,
       friction: 8,
     }).start();
 
-    // Auto-dismiss
-    setTimeout(() => {
-      hideBanner(id);
-    }, newNotification.duration);
+    bTimer.current = setTimeout(() => {
+      // Slide out to top
+      Animated.spring(bannerSlideAnim, {
+        toValue: -200,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 8,
+      }).start(() => setBanner(null));
+    }, n.durationMs ?? 4000);
+  }, [bannerSlideAnim]);
 
-    // Haptic feedback
-    if (newNotification.type === 'success') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } else if (newNotification.type === 'error') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    } else {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    }
-  };
-
-  const showToast = (notification: Omit<Notification, 'id'>) => {
-    const id = generateId();
-    const newNotification = { ...notification, id, duration: notification.duration || 3000 };
+  const showToast = useCallback((t: ToastPayload) => {
+    if (tTimer.current) clearTimeout(tTimer.current);
     
-    setToasts(prev => [...prev, newNotification]);
+    setToast(t);
     
-    // Animate in from bottom
-    const animation = new Animated.Value(100);
-    toastAnimations.current[id] = animation;
-    
-    Animated.spring(animation, {
-      toValue: 0,
+    // Fade in
+    Animated.spring(toastFadeAnim, {
+      toValue: 1,
       useNativeDriver: true,
       tension: 100,
       friction: 8,
     }).start();
 
-    // Auto-dismiss
-    setTimeout(() => {
-      hideToast(id);
-    }, newNotification.duration);
-
-    // Light haptic feedback
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  };
-
-  const hideBanner = (id: string) => {
-    const animation = bannerAnimations.current[id];
-    if (animation) {
-      Animated.timing(animation, {
-        toValue: -100,
-        duration: 200,
+    tTimer.current = setTimeout(() => {
+      // Fade out
+      Animated.spring(toastFadeAnim, {
+        toValue: 0,
         useNativeDriver: true,
-      }).start(() => {
-        setBanners(prev => prev.filter(n => n.id !== id));
-        delete bannerAnimations.current[id];
-      });
-    }
-  };
+        tension: 100,
+        friction: 8,
+      }).start(() => setToast(null));
+    }, t.durationMs ?? 2500);
+  }, [toastFadeAnim]);
 
-  const hideToast = (id: string) => {
-    const animation = toastAnimations.current[id];
-    if (animation) {
-      Animated.timing(animation, {
-        toValue: 100,
-        duration: 200,
-        useNativeDriver: true,
-      }).start(() => {
-        setToasts(prev => prev.filter(n => n.id !== id));
-        delete toastAnimations.current[id];
-      });
-    }
-  };
+  const dismissBanner = useCallback(() => {
+    if (bTimer.current) clearTimeout(bTimer.current);
+    
+    Animated.spring(bannerSlideAnim, {
+      toValue: -200,
+      useNativeDriver: true,
+      tension: 100,
+      friction: 8,
+    }).start(() => setBanner(null));
+  }, [bannerSlideAnim]);
 
-  const clearNotification = (id: string) => {
-    if (banners.find(b => b.id === id)) {
-      hideBanner(id);
-    } else if (toasts.find(t => t.id === id)) {
-      hideToast(id);
-    }
-  };
+  const dismissToast = useCallback(() => {
+    if (tTimer.current) clearTimeout(tTimer.current);
+    
+    Animated.spring(toastFadeAnim, {
+      toValue: 0,
+      useNativeDriver: true,
+      tension: 100,
+      friction: 8,
+    }).start(() => setToast(null));
+  }, [toastFadeAnim]);
 
-  const getNotificationStyle = (type: NotificationType) => {
-    switch (type) {
-      case 'success':
-        return { backgroundColor: theme.colors.success, icon: 'checkmark-circle' };
-      case 'error':
-        return { backgroundColor: theme.colors.error, icon: 'close-circle' };
-      case 'warning':
-        return { backgroundColor: theme.colors.warning, icon: 'warning' };
-      case 'info':
-        return { backgroundColor: theme.colors.info, icon: 'information-circle' };
-      default:
-        return { backgroundColor: theme.colors.accent, icon: 'information-circle' };
-    }
-  };
-
-  const value: NotificationContextType = {
-    notify: {
-      banner: showBanner,
-      toast: showToast,
-    },
-    clearNotification,
-  };
+  const value = useMemo(() => ({ 
+    banner: showBanner, 
+    toast: showToast 
+  }), [showBanner, showToast]);
 
   return (
     <NotificationContext.Provider value={value}>
       {children}
-      
-      {/* Banner Notifications */}
-      {banners.map((notification) => {
-        const style = getNotificationStyle(notification.type);
-        const animation = bannerAnimations.current[notification.id];
-        
-        return (
-          <Animated.View
-            key={notification.id}
-            style={[
-              styles.banner,
-              { backgroundColor: style.backgroundColor },
-              { transform: [{ translateY: animation || new Animated.Value(-100) }] },
-            ]}
-          >
+
+      {/* Banner Notification */}
+      {banner && (
+        <Animated.View
+          style={[
+            styles.bannerWrap,
+            {
+              transform: [{ translateY: bannerSlideAnim }],
+            },
+          ]}
+        >
+          <Pressable onPress={dismissBanner} style={[styles.banner, bannerStyle(banner.type)]}>
             <View style={styles.bannerContent}>
-              <Ionicons name={style.icon as any} size={28} color="white" />
+              <Ionicons 
+                name={getBannerIcon(banner.type)} 
+                size={24} 
+                color="#FFFFFF" 
+                style={styles.bannerIcon}
+              />
               <View style={styles.bannerText}>
-                {notification.title && (
-                  <Text style={styles.bannerTitle}>{notification.title}</Text>
-                )}
-                <Text style={styles.bannerMessage}>{notification.message}</Text>
+                <Text style={styles.bannerTitle}>{banner.title}</Text>
+                {!!banner.message && <Text style={styles.bannerMsg}>{banner.message}</Text>}
               </View>
-              <TouchableOpacity
-                style={styles.bannerClose}
-                onPress={() => hideBanner(notification.id)}
-                accessibilityLabel="Close notification"
-                accessibilityRole="button"
-              >
-                <Ionicons name="close" size={24} color="white" />
-              </TouchableOpacity>
             </View>
-          </Animated.View>
-        );
-      })}
-      
-      {/* Toast Notifications */}
-      {toasts.map((notification) => {
-        const style = getNotificationStyle(notification.type);
-        const animation = toastAnimations.current[notification.id];
-        
-        return (
-          <Animated.View
-            key={notification.id}
-            style={[
-              styles.toast,
-              { backgroundColor: style.backgroundColor },
-              { transform: [{ translateY: animation || new Animated.Value(100) }] },
-            ]}
-          >
-            <View style={styles.toastContent}>
-              <Ionicons name={style.icon as any} size={24} color="white" />
-              <Text style={styles.toastMessage}>{notification.message}</Text>
-            </View>
-          </Animated.View>
-        );
-      })}
+          </Pressable>
+        </Animated.View>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <Animated.View
+          style={[
+            styles.toastWrap,
+            {
+              opacity: toastFadeAnim,
+            },
+          ]}
+        >
+          <Pressable onPress={dismissToast} style={styles.toast}>
+            <Text style={styles.toastText}>{toast.message}</Text>
+          </Pressable>
+        </Animated.View>
+      )}
     </NotificationContext.Provider>
   );
 };
 
+const getBannerIcon = (type: NoticeType = 'info') => {
+  switch (type) {
+    case 'success': return 'checkmark-circle';
+    case 'warning': return 'warning';
+    case 'error': return 'close-circle';
+    default: return 'information-circle';
+  }
+};
+
+const bannerStyle = (type: NoticeType = 'info') => {
+  const colors = {
+    success: '#2BB673',
+    warning: '#FFB020',
+    error: '#E5484D',
+    info: '#3B82F6',
+  };
+  return { backgroundColor: colors[type] };
+};
+
 const styles = StyleSheet.create({
-  banner: {
+  bannerWrap: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
+    alignItems: 'center',
     zIndex: 1000,
-    paddingTop: StatusBar.currentHeight || 44,
-    paddingBottom: theme.spacing.md,
-    ...theme.shadows.lg,
+    paddingTop: 50, // Safe area for status bar
+  },
+  banner: {
+    width: '94%',
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
   bannerContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    gap: theme.spacing.md,
+  },
+  bannerIcon: {
+    marginRight: 12,
   },
   bannerText: {
     flex: 1,
   },
   bannerTitle: {
-    ...theme.typography.titleSmall,
-    color: 'white',
-    marginBottom: theme.spacing.xs,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
   },
-  bannerMessage: {
-    ...theme.typography.body,
-    color: 'white',
-    lineHeight: 22,
+  bannerMsg: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#FFFFFF',
+    opacity: 0.9,
   },
-  bannerClose: {
-    padding: theme.spacing.sm,
-    minHeight: 44,
-    justifyContent: 'center',
+
+  toastWrap: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: 'center',
+    zIndex: 1000,
+    paddingBottom: 40, // Safe area for home indicator
   },
   toast: {
-    position: 'absolute',
-    bottom: 100,
-    left: theme.spacing.lg,
-    right: theme.spacing.lg,
-    zIndex: 1000,
-    borderRadius: theme.borderRadius.pill,
-    ...theme.shadows.lg,
+    maxWidth: '92%',
+    backgroundColor: '#111',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 28,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
-  toastContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    gap: theme.spacing.md,
-  },
-  toastMessage: {
-    ...theme.typography.body,
-    color: 'white',
-    flex: 1,
+  toastText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
     textAlign: 'center',
   },
 });

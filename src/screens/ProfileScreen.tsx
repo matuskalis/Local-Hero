@@ -5,14 +5,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { sharedRequests, deleteRequest } from './HomeScreen';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from '../ui/components';
+import { useNotify } from '../ui/notifications/NotificationProvider';
 
 export default function ProfileScreen({ navigation, route }: any) {
+  const notify = useNotify();
   const [myRequests, setMyRequests] = useState(sharedRequests.filter(req => req.isOwn));
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [requestToDelete, setRequestToDelete] = useState<any>(null);
@@ -61,27 +62,13 @@ export default function ProfileScreen({ navigation, route }: any) {
   };
 
   const handleProfilePicturePress = () => {
-    Alert.alert(
-      'Change Profile Picture',
-      'Choose an option:',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Take Photo', 
-          onPress: () => {
-            // In a real app, this would open camera
-            Alert.alert('Camera', 'This would open your camera to take a photo');
-          }
-        },
-        { 
-          text: 'Choose from Library', 
-          onPress: () => {
-            // In a real app, this would open photo library
-            Alert.alert('Photo Library', 'This would open your photo library to select a photo');
-          }
-        }
-      ]
-    );
+    // Show info about profile picture feature
+    notify.banner({
+      title: 'Profile Picture',
+      message: 'Tap to change your profile picture. This feature will be available soon!',
+      type: 'info',
+      durationMs: 5000
+    });
   };
 
   return (

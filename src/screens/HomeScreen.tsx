@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNotify } from '../ui/notifications/NotificationProvider';
 import { Avatar } from '../ui/components';
 
 // Shared state for requests - this will be passed between screens
@@ -70,6 +71,7 @@ export const deleteRequest = (requestId: number) => {
 };
 
 export default function HomeScreen({ navigation, route }: any) {
+  const notify = useNotify();
   const [requests, setRequests] = useState(sharedRequests);
   const [refreshing, setRefreshing] = useState(false);
   const userName = route?.params?.userName || 'Your Name';
@@ -92,6 +94,11 @@ export default function HomeScreen({ navigation, route }: any) {
     refreshRequests();
     setTimeout(() => {
       setRefreshing(false);
+      notify.banner({ 
+        title: 'Updated', 
+        message: 'Latest requests loaded', 
+        type: 'success' 
+      });
     }, 500);
   };
 
@@ -102,6 +109,7 @@ export default function HomeScreen({ navigation, route }: any) {
   const handleRequestPress = (request: any) => {
     // Navigate to request detail screen
     navigation.navigate('RequestDetail', { request, userName });
+    notify.toast({ message: 'Opening request details...' });
   };
 
   const getCategoryIcon = (category: string) => {

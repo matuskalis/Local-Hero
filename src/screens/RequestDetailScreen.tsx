@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from '../ui/components';
+import { useNotify } from '../ui/notifications/NotificationProvider';
 
 interface Request {
   id: number;
@@ -32,6 +32,7 @@ interface Offer {
 }
 
 export default function RequestDetailScreen({ navigation, route }: any) {
+  const notify = useNotify();
   const [note, setNote] = useState('');
   const [noteHeight, setNoteHeight] = useState(60);
   const [showOffers, setShowOffers] = useState(false);
@@ -71,7 +72,12 @@ export default function RequestDetailScreen({ navigation, route }: any) {
 
   const handleSubmitOffer = async () => {
     if (!note.trim()) {
-      Alert.alert('Note Required', 'Please add a note explaining how you can help.');
+      notify.banner({
+        title: 'Note Required',
+        message: 'Please add a note explaining how you can help.',
+        type: 'warning',
+        durationMs: 4000
+      });
       return;
     }
 
@@ -93,17 +99,28 @@ export default function RequestDetailScreen({ navigation, route }: any) {
       setNote('');
       setNoteHeight(60);
       
-      Alert.alert(
-        'Offer Submitted!',
-        'Your offer has been sent to the requester. They\'ll review it and get back to you.',
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
-      );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to submit offer. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+      notify.banner({
+        title: 'Offer Submitted!',
+        message: 'Your offer has been sent to the requester. They\'ll review it and get back to you.',
+        type: 'success',
+        durationMs: 5000
+      });
+      
+      // Navigate back after a short delay
+      setTimeout(() => {
+        navigation.navigate('MainTabs', { screen: 'Home' });
+      }, 2000);
+          } catch (error) {
+        notify.banner({
+          title: 'Error',
+          message: 'Failed to submit offer. Please try again.',
+          type: 'error',
+          durationMs: 4000
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -531,7 +548,8 @@ const styles = StyleSheet.create({
     padding: 20,
     fontSize: 18,
     backgroundColor: 'white',
-    textAlignVertical: 'top',
+    textAlign: 'center',
+    textAlignVertical: 'center',
     minHeight: 60,
     maxHeight: 200,
   },
