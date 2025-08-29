@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   RefreshControl,
+  Modal,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -52,6 +54,59 @@ export let sharedRequests: any[] = [
   },
 ];
 
+// Mock announcements (no Supabase; crash-safe)
+type Announcement = {
+  id: number;
+  title: string;
+  body: string;
+  photos?: string[];
+  city?: string;
+  isPinned?: boolean;
+  createdAt: string;
+  location?: string;
+  startsAt?: string;
+  attendeeCount?: number;
+};
+
+export const mockAnnouncements: Announcement[] = [
+  {
+    id: 101,
+    title: 'Town Cleanup – Saturday 10:00',
+    body: 'Join us at the Roundup Park for a community cleanup. Gloves and bags provided. All ages welcome!',
+    photos: ['https://images.unsplash.com/photo-1520975619010-38c5b9a3a3c1?w=600'],
+    city: 'Roundup',
+    location: 'Roundup Park',
+    startsAt: 'Saturday 10:00 AM',
+    isPinned: true,
+    createdAt: '1 hour ago',
+    attendeeCount: 23,
+  },
+  {
+    id: 102,
+    title: 'Library Tech Help – Tuesday 4PM',
+    body: 'Bring your phone or tablet. Volunteers will help install the Local Hero app and answer questions.',
+    photos: [],
+    city: 'Roundup',
+    location: 'Roundup Library',
+    startsAt: 'Tuesday 4:00 PM',
+    isPinned: false,
+    createdAt: 'Yesterday',
+    attendeeCount: 8,
+  },
+  {
+    id: 103,
+    title: 'Senior Lunch – Thursday 12:00',
+    body: 'Free lunch at the Senior Center. All welcome. Great opportunity to meet neighbors!',
+    photos: [],
+    city: 'Melstone',
+    location: 'Senior Center',
+    startsAt: 'Thursday 12:00 PM',
+    isPinned: false,
+    createdAt: '2 days ago',
+    attendeeCount: 15,
+  },
+];
+
 export const addRequest = (request: any) => {
   const newRequest = {
     ...request,
@@ -74,6 +129,10 @@ export default function HomeScreen({ navigation, route }: any) {
   const notify = useNotify();
   const [requests, setRequests] = useState(sharedRequests);
   const [refreshing, setRefreshing] = useState(false);
+  const [announcements, setAnnouncements] = useState<Announcement[]>(mockAnnouncements);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
+  const [isAttending, setIsAttending] = useState<Record<number, boolean>>({});
+  const [activeTab, setActiveTab] = useState<'announcements' | 'requests'>('announcements');
   const userName = route?.params?.userName || 'Your Name';
 
   // Refresh requests from shared state
@@ -96,7 +155,7 @@ export default function HomeScreen({ navigation, route }: any) {
       setRefreshing(false);
       notify.banner({ 
         title: 'Updated', 
-        message: 'Latest requests loaded', 
+        message: 'Latest content loaded', 
         type: 'success' 
       });
     }, 500);
@@ -125,12 +184,29 @@ export default function HomeScreen({ navigation, route }: any) {
     }
   };
 
+  const openAnnouncement = (a: Announcement) => {
+    setSelectedAnnouncement(a);
+    notify.banner({ title: 'Announcement', message: a.title, type: 'info' });
+  };
+
+  const toggleAttend = (id: number) => {
+    setIsAttending(prev => {
+      const next = { ...prev, [id]: !prev[id] };
+      notify.toast({ message: next[id] ? 'Marked attending' : 'Attendance removed' });
+      return next;
+    });
+  };
+
+  const navigateToAnnouncements = () => {
+    navigation.navigate('Announcements', { userName });
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       {/* White Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Requests</Text>
+          <Text style={styles.headerTitle}>Hello, {userName}!</Text>
           <View style={styles.headerButtons}>
             <TouchableOpacity
               style={styles.myRequestsButton}
@@ -150,6 +226,37 @@ export default function HomeScreen({ navigation, route }: any) {
         <View style={styles.headerDivider} />
       </View>
 
+      {/* Tab Switcher */}
+      <View style={styles.tabSwitcher}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'announcements' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('announcements')}
+        >
+          <Ionicons 
+            name="megaphone" 
+            size={24} 
+            color={activeTab === 'announcements' ? "#FFFFFF" : "#2BB673"} 
+          />
+          <Text style={[styles.tabText, activeTab === 'announcements' && styles.tabTextActive]}>
+            City Announcements
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'requests' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('requests')}
+        >
+          <Ionicons 
+            name="people" 
+            size={24} 
+            color={activeTab === 'requests' ? "#FFFFFF" : "#2BB673"} 
+          />
+          <Text style={[styles.tabText, activeTab === 'requests' && styles.tabTextActive]}>
+            People Requests
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         style={styles.content}
         refreshControl={
@@ -157,82 +264,179 @@ export default function HomeScreen({ navigation, route }: any) {
         }
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Welcome, {userName}!</Text>
-          <Text style={styles.welcomeSubtitle}>
-            Here are the latest requests from your community
-          </Text>
-        </View>
-
-        <View style={styles.requestsSection}>
-          <Text style={styles.sectionTitle}>Community Requests</Text>
-          
-          {requests.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No requests yet</Text>
-              <Text style={styles.emptySubtext}>
-                Be the first to ask for help or wait for others
-              </Text>
-            </View>
-          ) : (
-            requests.map((request) => (
-              <TouchableOpacity
-                key={request.id}
-                style={[styles.requestCard, request.isOwn && styles.ownRequestCard]}
-                onPress={() => handleRequestPress(request)}
-              >
-                <View style={styles.requestHeader}>
-                  <View style={styles.requestLeft}>
-                    <View style={styles.requestTitleRow}>
-                      <Avatar 
-                        size="small" 
-                        name={request.userName}
-                        style={styles.requestAvatar}
-                      />
-                      <Text style={styles.requestTitle}>{request.body}</Text>
-                    </View>
-                    <Text style={styles.requestTime}>{request.createdAt}</Text>
-                  </View>
-                  
-
-                </View>
-                
-                <View style={styles.requestFooter}>
-                  <View style={styles.requestMeta}>
-                    <Ionicons name="time" size={20} color="#4D4D4D" />
-                    <Text style={styles.requestMetaText}>{request.when}</Text>
-                  </View>
-                  
-                  <View style={styles.requestMeta}>
-                    <Ionicons 
-                      name={request.visibility === 'public' ? 'globe' : 'people'} 
-                      size={20} 
-                      color="#4D4D4D" 
-                    />
-                    <Text style={styles.requestMetaText}>
-                      {request.visibility === 'public' ? 'Public' : 'Friends'}
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.requestMeta}>
-                    <Ionicons name="location" size={20} color="#4D4D4D" />
-                    <Text style={styles.requestMetaText}>{request.community}</Text>
-                  </View>
-                </View>
+        {activeTab === 'announcements' ? (
+          /* City Announcements Content */
+          <View style={styles.contentSection}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Latest from City</Text>
+              <TouchableOpacity style={styles.seeAllButton} onPress={navigateToAnnouncements}>
+                <Text style={styles.seeAllText}>See All</Text>
+                <Ionicons name="chevron-forward" size={20} color="#2BB673" />
               </TouchableOpacity>
-            ))
-          )}
-        </View>
+            </View>
+            
+            {announcements.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="megaphone-outline" size={64} color="#9CA3AF" />
+                <Text style={styles.emptyText}>No announcements</Text>
+                <Text style={styles.emptySubtext}>Check back later for city updates</Text>
+              </View>
+            ) : (
+              announcements.map((a) => (
+                <TouchableOpacity
+                  key={a.id}
+                  style={[styles.annCard, a.isPinned && styles.annPinned]}
+                  onPress={() => openAnnouncement(a)}
+                >
+                  <View style={styles.annHeader}>
+                    {a.isPinned && <Text style={styles.annBadge}>PINNED</Text>}
+                    <Text style={styles.annTitle}>{a.title}</Text>
+                  </View>
+                  <Text style={styles.annMeta}>
+                    {a.createdAt}{a.city ? ` • ${a.city}` : ''}
+                    {a.location && ` • ${a.location}`}
+                  </Text>
+                  {!!a.photos?.length && (
+                    <Image
+                      source={{ uri: a.photos[0] }}
+                      style={styles.annImage}
+                      resizeMode="cover"
+                    />
+                  )}
+                  <Text style={styles.annBody} numberOfLines={2}>{a.body}</Text>
+                  <View style={styles.annActions}>
+                    <TouchableOpacity
+                      onPress={() => toggleAttend(a.id)}
+                      style={[styles.attendBtn, isAttending[a.id] && styles.attendBtnOn]}
+                    >
+                      <Text style={[styles.attendText, isAttending[a.id] && styles.attendTextOn]}>
+                        {isAttending[a.id] ? 'Attending' : 'Attend'}
+                      </Text>
+                    </TouchableOpacity>
+                    <View style={styles.attendeeCount}>
+                      <Ionicons name="people" size={20} color="#6B7280" />
+                      <Text style={styles.attendeeCountText}>{a.attendeeCount || 0}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => openAnnouncement(a)} style={styles.moreBtn}>
+                      <Text style={styles.moreText}>Open</Text>
+                    </TouchableOpacity>
+                  </View>
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
+        ) : (
+          /* People Requests Content */
+          <View style={styles.contentSection}>
+            <Text style={styles.sectionTitle}>Community Requests</Text>
+            
+            {requests.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="people-outline" size={64} color="#9CA3AF" />
+                <Text style={styles.emptyText}>No requests yet</Text>
+                <Text style={styles.emptySubtext}>
+                  Be the first to ask for help or wait for others
+                </Text>
+              </View>
+            ) : (
+              requests.map((request) => (
+                <TouchableOpacity
+                  key={request.id}
+                  style={[styles.requestCard, request.isOwn && styles.ownRequestCard]}
+                  onPress={() => handleRequestPress(request)}
+                >
+                  <View style={styles.requestHeader}>
+                    <View style={styles.requestLeft}>
+                      <View style={styles.requestTitleRow}>
+                        <Avatar 
+                          size="small" 
+                          name={request.userName}
+                          style={styles.requestAvatar}
+                        />
+                        <Text style={styles.requestTitle}>{request.body}</Text>
+                      </View>
+                      <Text style={styles.requestTime}>{request.createdAt}</Text>
+                    </View>
+                  </View>
+                  
+                  <View style={styles.requestFooter}>
+                    <View style={styles.requestMeta}>
+                      <Ionicons name="time" size={20} color="#4D4D4D" />
+                      <Text style={styles.requestMetaText}>{request.when}</Text>
+                    </View>
+                    
+                    <View style={styles.requestMeta}>
+                      <Ionicons 
+                        name={request.visibility === 'public' ? 'globe' : 'people'} 
+                        size={20} 
+                        color="#4D4D4D" 
+                      />
+                      <Text style={styles.requestMetaText}>
+                        {request.visibility === 'public' ? 'Public' : 'Friends'}
+                      </Text>
+                    </View>
+                    
+                    <View style={styles.requestMeta}>
+                      <Ionicons name="location" size={20} color="#4D4D4D" />
+                      <Text style={styles.requestMetaText}>{request.community}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))
+            )}
 
-        <View style={styles.helpSection}>
-          <Text style={styles.sectionTitle}>How to Help</Text>
-          <View style={styles.helpCard}>
-            <Text style={styles.helpText}>
-              Tap on any request to see details and offer help
+            <View style={styles.helpSection}>
+              <View style={styles.helpCard}>
+                <Ionicons name="heart" size={32} color="#2BB673" style={styles.helpIcon} />
+                <Text style={styles.helpText}>
+                  Tap on any request to see details and offer help
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Announcement Detail Modal */}
+      <Modal
+        transparent
+        animationType="slide"
+        visible={!!selectedAnnouncement}
+        onRequestClose={() => setSelectedAnnouncement(null)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>{selectedAnnouncement?.title}</Text>
+            <Text style={styles.modalMeta}>
+              {selectedAnnouncement?.createdAt}{selectedAnnouncement?.city ? ` • ${selectedAnnouncement?.city}` : ''}
+              {selectedAnnouncement?.location && ` • ${selectedAnnouncement?.location}`}
             </Text>
+            {!!selectedAnnouncement?.photos?.length && (
+              <Image
+                source={{ uri: selectedAnnouncement?.photos[0] as string }}
+                style={styles.modalImage}
+                resizeMode="cover"
+              />
+            )}
+            <ScrollView style={{maxHeight: 220}}>
+              <Text style={styles.modalBody}>{selectedAnnouncement?.body}</Text>
+            </ScrollView>
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                onPress={() => selectedAnnouncement && toggleAttend(selectedAnnouncement.id)}
+                style={[styles.attendBtn, selectedAnnouncement && isAttending[selectedAnnouncement.id] && styles.attendBtnOn]}
+              >
+                <Text style={[styles.attendText, selectedAnnouncement && isAttending[selectedAnnouncement.id] && styles.attendTextOn]}>
+                  {selectedAnnouncement && isAttending[selectedAnnouncement.id] ? 'Attending' : 'Attend'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setSelectedAnnouncement(null)} style={styles.closeBtn}>
+                <Text style={styles.closeText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </ScrollView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -291,8 +495,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  tabSwitcher: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  tabButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  tabButtonActive: {
+    backgroundColor: '#2BB673',
+  },
+  tabText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2BB673',
+  },
+  tabTextActive: {
+    color: '#FFFFFF',
+  },
   content: {
     flex: 1,
+  },
+  contentSection: {
+    paddingHorizontal: 24,
+    marginBottom: 24,
   },
   welcomeSection: {
     backgroundColor: '#FFFFFF',
@@ -316,14 +552,131 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 28,
   },
-  requestsSection: {
+  annSection: {
     paddingHorizontal: 24,
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#000000',
+  },
+  seeAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E6F7EF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
+    gap: 8,
+  },
+  seeAllText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2BB673',
+  },
+  annCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  annPinned: {
+    borderLeftWidth: 6,
+    borderLeftColor: '#2BB673',
+  },
+  annHeader: {
+    marginBottom: 8,
+  },
+  annBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#E6F7EF',
+    color: '#2BB673',
+    fontSize: 14,
+    fontWeight: '700',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    marginBottom: 8,
+  },
+  annTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#000',
+  },
+  annMeta: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  annImage: {
+    width: '100%',
+    height: 140,
+    borderRadius: 14,
+    marginBottom: 12,
+  },
+  annBody: {
+    fontSize: 18,
+    color: '#0B1220',
+    marginBottom: 12,
+  },
+  annActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  attendBtn: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#2BB673',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 28,
+    minHeight: 48,
+  },
+  attendBtnOn: {
+    backgroundColor: '#2BB673',
+  },
+  attendText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2BB673',
+  },
+  attendTextOn: {
+    color: '#FFFFFF',
+  },
+  attendeeCount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginLeft: 'auto',
+  },
+  attendeeCountText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  moreBtn: {
+    backgroundColor: '#F3F4F6',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 28,
+  },
+  moreText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  requestsSection: {
+    paddingHorizontal: 24,
     marginBottom: 24,
   },
   requestCard: {
@@ -366,6 +719,12 @@ const styles = StyleSheet.create({
   },
   requestAvatar: {
     marginRight: 8,
+  },
+  requestTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    flex: 1,
   },
   categoryIcon: {
     fontSize: 24,
@@ -447,5 +806,61 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000000',
     lineHeight: 28,
+  },
+  helpIcon: {
+    marginBottom: 12,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  modalCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#000',
+    marginBottom: 6,
+  },
+  modalMeta: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginBottom: 12,
+  },
+  modalImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 14,
+    marginBottom: 12,
+  },
+  modalBody: {
+    fontSize: 18,
+    color: '#0B1220',
+    lineHeight: 26,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginTop: 16,
+  },
+  closeBtn: {
+    backgroundColor: '#111827',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 28,
+  },
+  closeText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

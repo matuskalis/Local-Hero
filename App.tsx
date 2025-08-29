@@ -19,6 +19,8 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import RequestDetailScreen from './src/screens/RequestDetailScreen';
 import MyRequestsScreen from './src/screens/MyRequestsScreen';
 import ChatScreen from './src/screens/ChatScreen';
+import AnnouncementsScreen from './src/screens/AnnouncementsScreen';
+import AnnouncementDetail from './src/screens/AnnouncementDetail';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -155,6 +157,8 @@ export default function App() {
             <Stack.Screen name="MyRequests" component={MyRequestsScreen} initialParams={{ userName }} />
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} initialParams={{ userName }} />
             <Stack.Screen name="Chat" component={ChatScreen} initialParams={{ userName }} />
+            <Stack.Screen name="Announcements" component={AnnouncementsScreen} initialParams={{ userName }} />
+            <Stack.Screen name="AnnouncementDetail" component={AnnouncementDetail} initialParams={{ userName }} />
           </Stack.Navigator>
           </NavigationContainer>
         </NotificationProvider>
