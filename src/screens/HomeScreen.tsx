@@ -206,24 +206,29 @@ export default function HomeScreen({ navigation, route }: any) {
       {/* White Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Hello, {userName}!</Text>
-          <View style={styles.headerButtons}>
-            <TouchableOpacity
-              style={styles.myRequestsButton}
-              onPress={() => navigation.navigate('MyRequests', { userName })}
-            >
-              <Ionicons name="list" size={24} color="#2BB673" />
-              <Text style={styles.myRequestsText}>My Requests</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.profileButton}
-              onPress={handleProfilePress}
-            >
-              <Ionicons name="person" size={32} color="#2BB673" />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.myRequestsButton}
+            onPress={() => navigation.navigate('MyRequests', { userName })}
+          >
+            <Ionicons name="list" size={24} color="#2BB673" />
+            <Text style={styles.myRequestsText}>My Requests</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.headerSpacer} />
+          
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={handleProfilePress}
+          >
+            <Ionicons name="person" size={32} color="#2BB673" />
+          </TouchableOpacity>
         </View>
         <View style={styles.headerDivider} />
+      </View>
+
+      {/* Hello Section */}
+      <View style={styles.helloSection}>
+        <Text style={styles.helloText}>Hello, {userName}!</Text>
       </View>
 
       {/* Tab Switcher */}
@@ -234,11 +239,11 @@ export default function HomeScreen({ navigation, route }: any) {
         >
           <Ionicons 
             name="megaphone" 
-            size={24} 
+            size={20} 
             color={activeTab === 'announcements' ? "#FFFFFF" : "#2BB673"} 
           />
           <Text style={[styles.tabText, activeTab === 'announcements' && styles.tabTextActive]}>
-            City Announcements
+            City
           </Text>
         </TouchableOpacity>
         
@@ -248,11 +253,11 @@ export default function HomeScreen({ navigation, route }: any) {
         >
           <Ionicons 
             name="people" 
-            size={24} 
+            size={20} 
             color={activeTab === 'requests' ? "#FFFFFF" : "#2BB673"} 
           />
           <Text style={[styles.tabText, activeTab === 'requests' && styles.tabTextActive]}>
-            People Requests
+            People
           </Text>
         </TouchableOpacity>
       </View>
@@ -467,6 +472,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000000',
     flex: 1,
+    textAlign: 'center',
   },
   headerButtons: {
     flexDirection: 'row',
@@ -495,33 +501,53 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerSpacer: {
+    flex: 1,
+  },
   tabSwitcher: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: 24,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
+    gap: 16,
   },
   tabButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
     borderRadius: 20,
+    minWidth: 80,
+    justifyContent: 'center',
   },
   tabButtonActive: {
     backgroundColor: '#2BB673',
   },
   tabText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: '#2BB673',
   },
   tabTextActive: {
     color: '#FFFFFF',
+  },
+  helloSection: {
+    backgroundColor: '#FFFFFF',
+    padding: 24, // Reduced padding
+    margin: 0,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    alignItems: 'center',
+  },
+  helloText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#000000',
   },
   content: {
     flex: 1,
