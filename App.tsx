@@ -11,6 +11,7 @@ import NameInputScreen from './src/screens/NameInputScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import PostScreen from './src/screens/PostScreen';
 import InboxScreen from './src/screens/InboxScreen';
+import LeaderboardScreen from './src/screens/LeaderboardScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import RequestDetailScreen from './src/screens/RequestDetailScreen';
 import MyRequestsScreen from './src/screens/MyRequestsScreen';
@@ -102,11 +103,12 @@ export default function App() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+                <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="MainTabs" component={MainTabs} initialParams={{ userName }} />
-                              <Stack.Screen name="Profile" component={ProfileScreen} initialParams={{ userName }} />
-                    <Stack.Screen name="RequestDetail" component={RequestDetailScreen} initialParams={{ userName }} />
-                    <Stack.Screen name="MyRequests" component={MyRequestsScreen} initialParams={{ userName }} />
+          <Stack.Screen name="Profile" component={ProfileScreen} initialParams={{ userName }} />
+          <Stack.Screen name="RequestDetail" component={RequestDetailScreen} initialParams={{ userName }} />
+          <Stack.Screen name="MyRequests" component={MyRequestsScreen} initialParams={{ userName }} />
+          <Stack.Screen name="Leaderboard" component={LeaderboardScreen} initialParams={{ userName }} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

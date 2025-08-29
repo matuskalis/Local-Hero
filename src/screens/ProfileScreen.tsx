@@ -208,8 +208,13 @@ export default function ProfileScreen({ navigation, route }: any) {
             <Ionicons name="add-circle" size={32} color="white" />
             <Text style={styles.actionButtonText}>Create New Request</Text>
           </TouchableOpacity>
-          
-
+          <TouchableOpacity
+            style={styles.leaderboardButton}
+            onPress={() => navigation.navigate('Leaderboard', { userName })}
+          >
+            <Ionicons name="trophy" size={24} color="#2BB673" />
+            <Text style={styles.leaderboardButtonText}>View Leaderboard</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -479,6 +484,29 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'white',
     marginLeft: 16,
+  },
+  leaderboardButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 16,
+    borderWidth: 2,
+    borderColor: '#2BB673',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  leaderboardButtonText: {
+    color: '#2BB673',
+    fontSize: 18,
+    fontWeight: '600',
+    marginLeft: 12,
   },
 
   popupOverlay: {
