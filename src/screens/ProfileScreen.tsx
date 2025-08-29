@@ -11,6 +11,7 @@ import { sharedRequests, deleteRequest } from './HomeScreen';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from '../ui/components';
 import { useNotify } from '../ui/notifications/NotificationProvider';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ProfileScreen({ navigation, route }: any) {
   const notify = useNotify();
@@ -201,6 +202,29 @@ export default function ProfileScreen({ navigation, route }: any) {
           >
             <Ionicons name="trophy" size={24} color="#2BB673" />
             <Text style={styles.leaderboardButtonText}>View Leaderboard</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={async () => {
+              try {
+                await AsyncStorage.removeItem('userName');
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'NameInput' }],
+                });
+              } catch (error) {
+                notify.banner({
+                  title: 'Error',
+                  message: 'Failed to logout. Please try again.',
+                  type: 'error',
+                  durationMs: 4000
+                });
+              }
+            }}
+          >
+            <Ionicons name="log-out" size={24} color="#E5484D" />
+            <Text style={styles.logoutButtonText}>Logout</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -491,6 +515,29 @@ const styles = StyleSheet.create({
   },
   leaderboardButtonText: {
     color: '#2BB673',
+    fontSize: 18,
+    fontWeight: '600',
+    marginLeft: 12,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 16,
+    borderWidth: 2,
+    borderColor: '#E5484D',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  logoutButtonText: {
+    color: '#E5484D',
     fontSize: 18,
     fontWeight: '600',
     marginLeft: 12,
