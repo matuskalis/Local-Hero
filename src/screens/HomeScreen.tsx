@@ -308,7 +308,7 @@ export default function HomeScreen({ navigation, route }: any) {
                       resizeMode="cover"
                     />
                   )}
-                  <Text style={styles.annBody} numberOfLines={2}>{a.body}</Text>
+                  <Text style={styles.annBody} numberOfLines={3}>{a.body}</Text>
                   <View style={styles.annActions}>
                     <TouchableOpacity
                       onPress={() => toggleAttend(a.id)}
@@ -358,7 +358,7 @@ export default function HomeScreen({ navigation, route }: any) {
                           name={request.userName}
                           style={styles.requestAvatar}
                         />
-                        <Text style={styles.requestTitle}>{request.body}</Text>
+                        <Text style={styles.requestTitle} numberOfLines={2}>{request.body}</Text>
                       </View>
                       <Text style={styles.requestTime}>{request.createdAt}</Text>
                     </View>
@@ -367,7 +367,7 @@ export default function HomeScreen({ navigation, route }: any) {
                   <View style={styles.requestFooter}>
                     <View style={styles.requestMeta}>
                       <Ionicons name="time" size={20} color="#4D4D4D" />
-                      <Text style={styles.requestMetaText}>{request.when}</Text>
+                      <Text style={styles.requestMetaText} numberOfLines={1}>{request.when}</Text>
                     </View>
                     
                     <View style={styles.requestMeta}>
@@ -376,14 +376,14 @@ export default function HomeScreen({ navigation, route }: any) {
                         size={20} 
                         color="#4D4D4D" 
                       />
-                      <Text style={styles.requestMetaText}>
+                      <Text style={styles.requestMetaText} numberOfLines={1}>
                         {request.visibility === 'public' ? 'Public' : 'Friends'}
                       </Text>
                     </View>
                     
                     <View style={styles.requestMeta}>
                       <Ionicons name="location" size={20} color="#4D4D4D" />
-                      <Text style={styles.requestMetaText}>{request.community}</Text>
+                      <Text style={styles.requestMetaText} numberOfLines={1}>{request.community}</Text>
                     </View>
                   </View>
                 </TouchableOpacity>
