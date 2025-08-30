@@ -68,17 +68,25 @@ export default function ProfileScreen({ navigation, route }: any) {
         </View>
 
         <View style={styles.statsSection}>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>5</Text>
-            <Text style={styles.statLabel}>Requests Posted</Text>
+          <View style={styles.karmaCard}>
+            <Ionicons name="star" size={32} color="#FFD700" />
+            <Text style={styles.karmaNumber}>25</Text>
+            <Text style={styles.karmaLabel}>Karma Points Collected</Text>
           </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>12</Text>
-            <Text style={styles.statLabel}>Total Responses</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>3</Text>
-            <Text style={styles.statLabel}>People Helped</Text>
+          
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>5</Text>
+              <Text style={styles.statLabel}>Requests</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>12</Text>
+              <Text style={styles.statLabel}>Responses</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>3</Text>
+              <Text style={styles.statLabel}>People Helped</Text>
+            </View>
           </View>
         </View>
 
@@ -206,34 +214,78 @@ const styles = StyleSheet.create({
     color: '#7f8c8d',
   },
   statsSection: {
+    paddingHorizontal: 16, // Reduced from 20 to 16
+    marginBottom: 16, // Reduced from 20 to 16
+  },
+  karmaCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 20, // Reduced from 24 to 20
+    borderRadius: 20,
+    marginBottom: 12, // Reduced from 16 to 12
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
+  },
+  karmaNumber: {
+    fontSize: 38, // Reduced from 42 to 38
+    fontWeight: '800',
+    color: '#FFD700',
+    marginTop: 8, // Reduced from 12 to 8
+    marginBottom: 6, // Reduced from 8 to 6
+    textAlign: 'center',
+  },
+  karmaLabel: {
+    fontSize: 18, // Reduced from 19 to 18
+    fontWeight: '700',
+    color: '#1F2937',
+    textAlign: 'center',
+    lineHeight: 22, // Reduced from 24 to 22
+  },
+  statsRow: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    justifyContent: 'space-between',
+    marginTop: 6, // Reduced from 8 to 6
+    gap: 0,
   },
   statCard: {
     flex: 1,
-    backgroundColor: 'white',
-    padding: 24,
-    marginHorizontal: 6,
+    backgroundColor: '#FFFFFF',
+    padding: 14,
     borderRadius: 16,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
     elevation: 3,
+    minHeight: 140,
+    justifyContent: 'space-between', // Changed from 'center' to 'space-between'
+    marginHorizontal: 0,
+    paddingTop: 20, // Added top padding
+    paddingBottom: 20, // Added bottom padding
   },
   statNumber: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#27ae60',
-    marginBottom: 8,
+    fontSize: 30,
+    fontWeight: '800',
+    color: '#2BB673',
+    marginBottom: 0, // Removed margin since we're using space-between
+    textAlign: 'center',
+    marginTop: 20, // Added top margin to position numbers consistently
   },
   statLabel: {
-    fontSize: 16,
-    color: '#7f8c8d',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
     textAlign: 'center',
-    fontWeight: '500',
+    lineHeight: 16,
+    marginBottom: 20, // Added bottom margin to position labels consistently
   },
   requestsSection: {
     paddingHorizontal: 20,

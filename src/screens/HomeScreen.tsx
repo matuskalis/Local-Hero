@@ -73,7 +73,7 @@ export const mockAnnouncements: Announcement[] = [
     id: 101,
     title: 'Town Cleanup – Saturday 10:00',
     body: 'Join us at the Roundup Park for a community cleanup. Gloves and bags provided. All ages welcome!',
-    photos: ['https://images.unsplash.com/photo-1520975619010-38c5b9a3a3c1?w=600'],
+    photos: ['https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600'],
     city: 'Roundup',
     location: 'Roundup Park',
     startsAt: 'Saturday 10:00 AM',
@@ -272,14 +272,6 @@ export default function HomeScreen({ navigation, route }: any) {
         {activeTab === 'announcements' ? (
           /* City Announcements Content */
           <View style={styles.contentSection}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Latest from City</Text>
-              <TouchableOpacity style={styles.seeAllButton} onPress={navigateToAnnouncements}>
-                <Text style={styles.seeAllText}>See All</Text>
-                <Ionicons name="chevron-forward" size={20} color="#2BB673" />
-              </TouchableOpacity>
-            </View>
-            
             {announcements.length === 0 ? (
               <View style={styles.emptyState}>
                 <Ionicons name="megaphone-outline" size={64} color="#9CA3AF" />
@@ -287,54 +279,56 @@ export default function HomeScreen({ navigation, route }: any) {
                 <Text style={styles.emptySubtext}>Check back later for city updates</Text>
               </View>
             ) : (
-              announcements.map((a) => (
-                <TouchableOpacity
-                  key={a.id}
-                  style={[styles.annCard, a.isPinned && styles.annPinned]}
-                  onPress={() => openAnnouncement(a)}
-                >
-                  <View style={styles.annHeader}>
-                    {a.isPinned && <Text style={styles.annBadge}>PINNED</Text>}
-                    <Text style={styles.annTitle}>{a.title}</Text>
-                  </View>
-                  <Text style={styles.annMeta}>
-                    {a.createdAt}{a.city ? ` • ${a.city}` : ''}
-                    {a.location && ` • ${a.location}`}
-                  </Text>
-                  {!!a.photos?.length && (
-                    <Image
-                      source={{ uri: a.photos[0] }}
-                      style={styles.annImage}
-                      resizeMode="cover"
-                    />
-                  )}
-                  <Text style={styles.annBody} numberOfLines={3}>{a.body}</Text>
-                  <View style={styles.annActions}>
-                    <TouchableOpacity
-                      onPress={() => toggleAttend(a.id)}
-                      style={[styles.attendBtn, isAttending[a.id] && styles.attendBtnOn]}
-                    >
-                      <Text style={[styles.attendText, isAttending[a.id] && styles.attendTextOn]}>
-                        {isAttending[a.id] ? 'Attending' : 'Attend'}
-                      </Text>
-                    </TouchableOpacity>
-                    <View style={styles.attendeeCount}>
-                      <Ionicons name="people" size={20} color="#6B7280" />
-                      <Text style={styles.attendeeCountText}>{a.attendeeCount || 0}</Text>
+              <View style={styles.announcementsContainer}>
+                {announcements.map((a) => (
+                  <TouchableOpacity
+                    key={a.id}
+                    style={[styles.annCard, a.isPinned && styles.annPinned]}
+                    onPress={() => openAnnouncement(a)}
+                  >
+                    <View style={styles.annHeader}>
+                      {a.isPinned && <Text style={styles.annBadge}>PINNED</Text>}
+                      <Text style={styles.annTitle}>{a.title}</Text>
                     </View>
-                    <TouchableOpacity onPress={() => openAnnouncement(a)} style={styles.moreBtn}>
-                      <Text style={styles.moreText}>Open</Text>
-                    </TouchableOpacity>
-                  </View>
-                </TouchableOpacity>
-              ))
+                    <Text style={styles.annMeta}>
+                      {a.createdAt}{a.city ? ` • ${a.city}` : ''}
+                      {a.location && ` • ${a.location}`}
+                    </Text>
+                    {!!a.photos?.length && (
+                      <Image
+                        source={{ uri: a.photos[0] }}
+                        style={styles.annImage}
+                        resizeMode="cover"
+                      />
+                    )}
+                    <Text style={styles.annBody} numberOfLines={3}>{a.body}</Text>
+                    <View style={styles.annActions}>
+                      <TouchableOpacity
+                        onPress={() => toggleAttend(a.id)}
+                        style={[styles.attendBtn, isAttending[a.id] && styles.attendBtnOn]}
+                      >
+                        <Text style={[styles.attendText, isAttending[a.id] && styles.attendTextOn]}>
+                          {isAttending[a.id] ? 'Attending' : 'Attend'}
+                        </Text>
+                      </TouchableOpacity>
+                      <View style={styles.attendeeCount}>
+                        <Ionicons name="people" size={20} color="#6B7280" />
+                        <Text style={styles.attendeeCountText}>{a.attendeeCount || 0}</Text>
+                      </View>
+                      <TouchableOpacity onPress={() => openAnnouncement(a)} style={styles.moreBtn}>
+                        <Text style={styles.moreText}>Open</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
             )}
           </View>
         ) : (
           /* People Requests Content */
           <View style={styles.contentSection}>
             <Text style={styles.sectionTitle}>Community Requests</Text>
-            
+             
             {requests.length === 0 ? (
               <View style={styles.emptyState}>
                 <Ionicons name="people-outline" size={64} color="#9CA3AF" />
@@ -344,50 +338,52 @@ export default function HomeScreen({ navigation, route }: any) {
                 </Text>
               </View>
             ) : (
-              requests.map((request) => (
-                <TouchableOpacity
-                  key={request.id}
-                  style={[styles.requestCard, request.isOwn && styles.ownRequestCard]}
-                  onPress={() => handleRequestPress(request)}
-                >
-                  <View style={styles.requestHeader}>
-                    <View style={styles.requestLeft}>
-                      <View style={styles.requestTitleRow}>
-                        <Avatar 
-                          size="small" 
-                          name={request.userName}
-                          style={styles.requestAvatar}
-                        />
-                        <Text style={styles.requestTitle} numberOfLines={2}>{request.body}</Text>
+              <View style={styles.requestsContainer}>
+                {requests.map((request) => (
+                  <TouchableOpacity
+                    key={request.id}
+                    style={[styles.requestCard, request.isOwn && styles.ownRequestCard]}
+                    onPress={() => handleRequestPress(request)}
+                  >
+                    <View style={styles.requestHeader}>
+                      <View style={styles.requestLeft}>
+                        <View style={styles.requestTitleRow}>
+                          <Avatar 
+                            size="small" 
+                            name={request.userName}
+                            style={styles.requestAvatar}
+                          />
+                          <Text style={styles.requestTitle} numberOfLines={2}>{request.body}</Text>
+                        </View>
+                        <Text style={styles.requestTime}>{request.createdAt}</Text>
                       </View>
-                      <Text style={styles.requestTime}>{request.createdAt}</Text>
-                    </View>
-                  </View>
-                  
-                  <View style={styles.requestFooter}>
-                    <View style={styles.requestMeta}>
-                      <Ionicons name="time" size={20} color="#4D4D4D" />
-                      <Text style={styles.requestMetaText} numberOfLines={1}>{request.when}</Text>
                     </View>
                     
-                    <View style={styles.requestMeta}>
-                      <Ionicons 
-                        name={request.visibility === 'public' ? 'globe' : 'people'} 
-                        size={20} 
-                        color="#4D4D4D" 
-                      />
-                      <Text style={styles.requestMetaText} numberOfLines={1}>
-                        {request.visibility === 'public' ? 'Public' : 'Friends'}
-                      </Text>
+                    <View style={styles.requestFooter}>
+                      <View style={styles.requestMeta}>
+                        <Ionicons name="time" size={20} color="#4D4D4D" />
+                        <Text style={styles.requestMetaText} numberOfLines={1}>{request.when}</Text>
+                      </View>
+                      
+                      <View style={styles.requestMeta}>
+                        <Ionicons 
+                          name={request.visibility === 'public' ? 'globe' : 'people'} 
+                          size={20} 
+                          color="#4D4D4D" 
+                        />
+                        <Text style={styles.requestMetaText} numberOfLines={1}>
+                          {request.visibility === 'public' ? 'Public' : 'Friends'}
+                        </Text>
+                      </View>
+                      
+                      <View style={styles.requestMeta}>
+                        <Ionicons name="location" size={20} color="#4D4D4D" />
+                        <Text style={styles.requestMetaText} numberOfLines={1}>{request.community}</Text>
+                      </View>
                     </View>
-                    
-                    <View style={styles.requestMeta}>
-                      <Ionicons name="location" size={20} color="#4D4D4D" />
-                      <Text style={styles.requestMetaText} numberOfLines={1}>{request.community}</Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              ))
+                  </TouchableOpacity>
+                ))}
+              </View>
             )}
 
             <View style={styles.helpSection}>
@@ -553,8 +549,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentSection: {
-    paddingHorizontal: 24,
-    marginBottom: 24,
+    flex: 1,
+    paddingHorizontal: 16, // Reduced from 24 to 16 to move closer to edges
   },
   welcomeSection: {
     backgroundColor: '#FFFFFF',
@@ -592,6 +588,8 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#000000',
+    marginBottom: 16,
+    paddingHorizontal: 8, // Small padding for title
   },
   seeAllButton: {
     flexDirection: 'row',
@@ -794,25 +792,21 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: 'center',
-    padding: 32,
-    backgroundColor: '#FFFFFF',
-    margin: 0,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    paddingVertical: 48,
+    paddingHorizontal: 24,
   },
   emptyText: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#000000',
-    marginBottom: 12,
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#374151',
+    marginTop: 16,
+    marginBottom: 8,
   },
   emptySubtext: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#4D4D4D',
+    fontSize: 16,
+    color: '#6B7280',
     textAlign: 'center',
-    lineHeight: 26,
+    lineHeight: 22,
   },
   helpSection: {
     paddingHorizontal: 24,
@@ -888,5 +882,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  requestsContainer: {
+    gap: 16, // Keep gap between request cards
+  },
+  announcementsContainer: {
+    gap: 16, // Keep gap between announcement cards
   },
 });

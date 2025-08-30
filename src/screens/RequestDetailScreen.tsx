@@ -106,10 +106,8 @@ export default function RequestDetailScreen({ navigation, route }: any) {
         durationMs: 5000
       });
       
-      // Navigate back after a short delay
-      setTimeout(() => {
-        navigation.navigate('MainTabs', { screen: 'Home' });
-      }, 2000);
+      // Don't navigate away - let user stay on this screen
+      // User can navigate back manually when they want
           } catch (error) {
         notify.banner({
           title: 'Error',
@@ -561,7 +559,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     backgroundColor: 'white',
     textAlign: 'center',
-    textAlignVertical: 'center',
+    textAlignVertical: 'top',
     minHeight: 60,
     maxHeight: 200,
   },
