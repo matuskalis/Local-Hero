@@ -327,8 +327,6 @@ export default function HomeScreen({ navigation, route }: any) {
         ) : (
           /* People Requests Content */
           <View style={styles.contentSection}>
-            <Text style={styles.sectionTitle}>Community Requests</Text>
-             
             {requests.length === 0 ? (
               <View style={styles.emptyState}>
                 <Ionicons name="people-outline" size={64} color="#9CA3AF" />
@@ -536,8 +534,6 @@ const styles = StyleSheet.create({
     padding: 24, // Reduced padding
     margin: 0,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
     alignItems: 'center',
   },
   helloText: {
@@ -557,8 +553,6 @@ const styles = StyleSheet.create({
     padding: 32,
     margin: 0,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   welcomeTitle: {
     fontSize: 28,
@@ -610,8 +604,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 20,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   annPinned: {
     borderLeftWidth: 6,
@@ -708,8 +700,7 @@ const styles = StyleSheet.create({
     padding: 24,
     borderRadius: 20,
     marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    // Removed borderWidth: 1 and borderColor: '#E5E7EB' to eliminate gray lines
   },
   ownRequestCard: {
     borderLeftWidth: 6,
@@ -818,8 +809,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     margin: 0,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    // Removed borderWidth: 1 and borderColor: '#E5E7EB' to eliminate gray lines
   },
   helpText: {
     fontSize: 22,
@@ -884,9 +874,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   requestsContainer: {
-    gap: 16, // Keep gap between request cards
+    gap: 8, // Reduced from 16 to 8 (half the spacing)
   },
   announcementsContainer: {
-    gap: 16, // Keep gap between announcement cards
+    gap: 8, // Reduced from 16 to 8 (half the spacing)
   },
 });
