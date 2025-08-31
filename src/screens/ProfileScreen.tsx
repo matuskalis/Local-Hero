@@ -18,7 +18,11 @@ export default function ProfileScreen({ navigation, route }: any) {
   const userName = route?.params?.userName || 'Your Name';
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [tempPhoneNumber, setTempPhoneNumber] = useState('');
+  const [tempName, setTempName] = useState(userName);
+  const [tempLocation, setTempLocation] = useState('Melstone, MT');
 
   // Load phone number from storage on component mount
   React.useEffect(() => {
@@ -87,6 +91,66 @@ export default function ProfileScreen({ navigation, route }: any) {
     setTempPhoneNumber('');
   };
 
+  const handleNamePress = () => {
+    setIsEditingName(true);
+    setTempName(userName);
+  };
+
+  const handleSaveName = () => {
+    if (tempName.trim()) {
+      // In real app, this would update the user's name in the database
+      notify.banner({
+        title: 'Name Updated',
+        message: 'Your name has been updated successfully.',
+        type: 'success',
+        durationMs: 3000
+      });
+      setIsEditingName(false);
+    } else {
+      notify.banner({
+        title: 'Invalid Name',
+        message: 'Please enter a valid name.',
+        type: 'warning',
+        durationMs: 3000
+      });
+    }
+  };
+
+  const handleCancelNameEdit = () => {
+    setIsEditingName(false);
+    setTempName(userName);
+  };
+
+  const handleLocationPress = () => {
+    setIsEditingLocation(true);
+    setTempLocation('Melstone, MT');
+  };
+
+  const handleSaveLocation = () => {
+    if (tempLocation.trim()) {
+      // In real app, this would update the user's location in the database
+      notify.banner({
+        title: 'Location Updated',
+        message: 'Your location has been updated successfully.',
+        type: 'success',
+        durationMs: 3000
+      });
+      setIsEditingLocation(false);
+    } else {
+      notify.banner({
+        title: 'Invalid Location',
+        message: 'Please enter a valid location.',
+        type: 'warning',
+        durationMs: 3000
+      });
+    }
+  };
+
+  const handleCancelLocationEdit = () => {
+    setIsEditingLocation(false);
+    setTempLocation('Melstone, MT');
+  };
+
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -133,8 +197,78 @@ export default function ProfileScreen({ navigation, route }: any) {
             >
               <Ionicons name="person" size={64} color="white" />
             </TouchableOpacity>
-            <Text style={styles.userName}>{userName}</Text>
-            <Text style={styles.userLocation}>📍 Melstone, MT</Text>
+            
+            {/* Name Section */}
+            {!isEditingName ? (
+              <TouchableOpacity
+                style={styles.nameContainer}
+                onPress={handleNamePress}
+              >
+                <Text style={styles.userName}>{tempName}</Text>
+                <Ionicons name="create" size={16} color="#6B7280" />
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.editNameContainer}>
+                <TextInput
+                  style={styles.nameInput}
+                  value={tempName}
+                  onChangeText={setTempName}
+                  placeholder="Enter name"
+                  placeholderTextColor="#9CA3AF"
+                  autoFocus
+                />
+                <View style={styles.editNameActions}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={handleCancelNameEdit}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.saveButton}
+                    onPress={handleSaveName}
+                  >
+                    <Text style={styles.saveButtonText}>Save</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {/* Location Section */}
+            {!isEditingLocation ? (
+              <TouchableOpacity
+                style={styles.locationContainer}
+                onPress={handleLocationPress}
+              >
+                <Text style={styles.userLocation}>📍 {tempLocation}</Text>
+                <Ionicons name="create" size={16} color="#6B7280" />
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.editLocationContainer}>
+                <TextInput
+                  style={styles.locationInput}
+                  value={tempLocation}
+                  onChangeText={setTempLocation}
+                  placeholder="Enter location"
+                  placeholderTextColor="#9CA3AF"
+                  autoFocus
+                />
+                <View style={styles.editLocationActions}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={handleCancelLocationEdit}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.saveButton}
+                    onPress={handleSaveLocation}
+                  >
+                    <Text style={styles.saveButtonText}>Save</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
             
             {/* Phone Number Section */}
             {!isEditingPhone ? (
@@ -316,14 +450,15 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   userName: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 8,
+    color: '#000000',
+    marginRight: 8,
   },
   userLocation: {
-    fontSize: 20,
-    color: '#7f8c8d',
+    fontSize: 16,
+    color: '#6B7280',
+    marginRight: 8,
   },
   userPhone: {
     fontSize: 16,
@@ -352,6 +487,56 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   editPhoneActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  nameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  editNameContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  nameInput: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#F9FAFB',
+    marginBottom: 12,
+  },
+  editNameActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  editLocationContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  locationInput: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#F9FAFB',
+    marginBottom: 12,
+  },
+  editLocationActions: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
