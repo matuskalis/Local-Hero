@@ -16,6 +16,9 @@ export default function InboxScreen({ navigation, route }: any) {
   const notify = useNotify();
   const userName = route?.params?.userName || 'Your Name';
   
+  // Import shared requests to get offers
+  const { sharedRequests } = require('./HomeScreen');
+  
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -26,20 +29,22 @@ export default function InboxScreen({ navigation, route }: any) {
       preview: 'Hi! I saw your request for yard work and I\'d be happy to help. I have experience with gardening and I\'m available this weekend.',
       time: '2 hours ago',
       unread: true,
-      requestId: 1,
+      requestId: 3, // Updated to match your yard work request
       requestTitle: 'Need help with yard work',
+      offerId: '1',
     },
     {
       id: 2,
-      type: 'request',
-      from: 'Mike Chen',
+      type: 'offer',
+      from: 'Mike Johnson',
       fromId: 'mike456',
-      subject: 'New request: Help with grocery pickup',
-      preview: 'Hi! I just posted a new request for help with grocery pickup. I\'m unable to drive right now due to an injury.',
+      subject: 'Available for yard work',
+      preview: 'I\'d be happy to help. I have all the necessary tools.',
       time: '1 day ago',
       unread: true,
-      requestId: 2,
-      requestTitle: 'Help with grocery pickup',
+      requestId: 3, // Updated to match your yard work request
+      requestTitle: 'Need help with yard work',
+      offerId: '2',
     },
     {
       id: 3,
@@ -55,18 +60,48 @@ export default function InboxScreen({ navigation, route }: any) {
     },
     {
       id: 4,
-      type: 'offer',
+      type: 'request',
       from: 'Tom Wilson',
       fromId: 'tom101',
-      subject: 'Available for snow removal',
-      preview: 'Hello! I noticed you need help with snow removal. I have a snow blower and I\'m available this afternoon.',
+      subject: 'New request: Help with grocery pickup',
+      preview: 'Hello! I just posted a new request for help with grocery pickup. I\'m unable to drive right now due to an injury.',
       time: '4 hours ago',
       unread: true,
       requestId: 4,
-      requestTitle: 'Snow removal help needed',
+      requestTitle: 'Grocery pickup help needed',
     },
   ]);
 
+  // Update messages when offers change in shared requests
+  useEffect(() => {
+    const updateMessagesFromOffers = () => {
+      const userRequests = sharedRequests.filter(req => req.isOwn && req.offers);
+      const offerMessages = userRequests.flatMap(req => 
+        req.offers.map(offer => ({
+          id: `offer-${offer.id}`,
+          type: 'offer',
+          from: offer.helperName,
+          fromId: offer.id,
+          subject: `I can help with ${req.body}!`,
+          preview: offer.note,
+          time: offer.createdAt,
+          unread: true,
+          requestId: req.id,
+          requestTitle: req.body,
+          offerId: offer.id,
+        }))
+      );
+      
+      // Merge with existing messages, avoiding duplicates
+      setMessages(prev => {
+        const existingIds = new Set(prev.map(m => m.id));
+        const newOffers = offerMessages.filter(m => !existingIds.has(m.id));
+        return [...newOffers, ...prev];
+      });
+    };
+
+    updateMessagesFromOffers();
+  }, [sharedRequests]);
 
 
   const handleInviteFriends = () => {
@@ -92,11 +127,16 @@ export default function InboxScreen({ navigation, route }: any) {
         userName
       });
     } else if (message.type === 'offer') {
-      // Navigate to request detail to see the offer
-      navigation.navigate('RequestDetail', {
-        request: { id: message.requestId, title: message.requestTitle, userName: message.from },
-        userName
-      });
+      // Find the actual request with offers
+      const request = sharedRequests.find(req => req.id === message.requestId);
+      if (request) {
+        // Navigate to request detail to see and manage the offer
+        navigation.navigate('RequestDetail', {
+          request: request,
+          userName: userName,
+          showOffers: true, // Auto-show offers
+        });
+      }
     } else if (message.type === 'request') {
       // Navigate to request detail to see the new request
       navigation.navigate('RequestDetail', {

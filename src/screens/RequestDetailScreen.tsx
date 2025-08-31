@@ -37,7 +37,7 @@ export default function RequestDetailScreen({ navigation, route }: any) {
   const notify = useNotify();
   const [note, setNote] = useState('');
   const [noteHeight, setNoteHeight] = useState(60);
-  const [showOffers, setShowOffers] = useState(false);
+  const [showOffers, setShowOffers] = useState(route.params?.showOffers || false);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -213,55 +213,6 @@ export default function RequestDetailScreen({ navigation, route }: any) {
     // Don't reload offers - they're already loaded from request data or mock
   };
 
-  const handleAcceptHelp = (offerId: string) => {
-    Alert.alert(
-      'Accept Help',
-      'Are you sure you want to accept this help request?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Accept',
-          style: 'default',
-          onPress: () => {
-            const acceptedOffer = offers.find(offer => offer.id === offerId);
-            if (acceptedOffer) {
-              notify.banner({
-                title: 'Help Accepted!',
-                message: `${acceptedOffer.helperName} will contact you soon.`,
-                type: 'success',
-                durationMs: 5000
-              });
-              setOffers([acceptedOffer]); // Keep only the accepted offer
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleDeclineHelp = (offerId: string) => {
-    Alert.alert(
-      'Decline Help',
-      'Are you sure you want to decline this help request?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Decline',
-          style: 'destructive',
-          onPress: () => {
-            setOffers(prev => prev.filter(offer => offer.id !== offerId));
-            notify.banner({
-              title: 'Help Declined',
-              message: 'You have declined this help request.',
-              type: 'info',
-              durationMs: 4000
-            });
-          },
-        },
-      ]
-    );
-  };
-
   if (!request) {
     return (
       <SafeAreaView style={styles.container} edges={[]}>
@@ -429,38 +380,6 @@ export default function RequestDetailScreen({ navigation, route }: any) {
               <Ionicons name="chatbubble" size={20} color="#2BB673" />
               <Text style={styles.chatButtonText}>Chat with Requester</Text>
             </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Automatic Help Request Section - Show when someone offers help */}
-        {request.isOwn && offers.length > 0 && (
-          <View style={styles.helpRequestSection}>
-            <Text style={styles.sectionTitle}>Help Request Sent</Text>
-            <Text style={styles.sectionSubtitle}>
-              We've automatically sent a help request to {offers[0].helperName}
-            </Text>
-            
-            <View style={styles.helpRequestCard}>
-              <Text style={styles.helpRequestText}>
-                "Hi {offers[0].helperName}, I need help with: {request.body}"
-              </Text>
-              
-              <View style={styles.helpRequestActions}>
-                <TouchableOpacity
-                  style={styles.acceptHelpButton}
-                  onPress={() => handleAcceptHelp(offers[0].id)}
-                >
-                  <Text style={styles.acceptHelpButtonText}>Accept Help</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                  style={styles.declineHelpButton}
-                  onPress={() => handleDeclineHelp(offers[0].id)}
-                >
-                  <Text style={styles.declineHelpButtonText}>Decline Help</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
           </View>
         )}
       </ScrollView>
@@ -786,62 +705,6 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 20,
     color: '#7f8c8d',
-  },
-  helpRequestSection: {
-    backgroundColor: 'white',
-    margin: 20,
-    padding: 24,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  helpRequestCard: {
-    backgroundColor: '#f0f9eb', // Light green background
-    padding: 20,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#27ae60',
-    marginTop: 16,
-  },
-  helpRequestText: {
-    fontSize: 18,
-    color: '#27ae60',
-    fontWeight: '600',
-    lineHeight: 24,
-    marginBottom: 16,
-  },
-  helpRequestActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  acceptHelpButton: {
-    backgroundColor: '#27ae60',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 10,
-  },
-  acceptHelpButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  declineHelpButton: {
-    backgroundColor: '#e74c3c',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    flex: 1,
-    marginLeft: 10,
-  },
-  declineHelpButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 
