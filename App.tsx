@@ -16,6 +16,7 @@ import PostScreen from './src/screens/PostScreen';
 import InboxScreen from './src/screens/InboxScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import UserProfileScreen from './src/screens/UserProfileScreen';
 import RequestDetailScreen from './src/screens/RequestDetailScreen';
 import MyRequestsScreen from './src/screens/MyRequestsScreen';
 import ChatScreen from './src/screens/ChatScreen';
@@ -153,6 +154,7 @@ export default function App() {
                       <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="MainTabs" component={MainTabs} initialParams={{ userName }} />
             <Stack.Screen name="Profile" component={ProfileScreen} initialParams={{ userName }} />
+            <Stack.Screen name="UserProfile" component={UserProfileScreen} initialParams={{ userName }} />
             <Stack.Screen name="RequestDetail" component={RequestDetailScreen} initialParams={{ userName }} />
             <Stack.Screen name="MyRequests" component={MyRequestsScreen} initialParams={{ userName }} />
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} initialParams={{ userName }} />

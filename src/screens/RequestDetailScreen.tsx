@@ -247,11 +247,19 @@ export default function RequestDetailScreen({ navigation, route }: any) {
           <View style={styles.requestHeader}>
             <View style={styles.requestLeft}>
               <View style={styles.requestTitleRow}>
-                <Avatar 
-                  size="medium" 
-                  name={request.userName}
-                  style={styles.requestAvatar}
-                />
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('UserProfile', { 
+                    userName, 
+                    otherUserName: request.userName,
+                    isOwnProfile: request.isOwn 
+                  })}
+                >
+                  <Avatar 
+                    size="medium" 
+                    name={request.userName}
+                    style={styles.requestAvatar}
+                  />
+                </TouchableOpacity>
                 <Text style={styles.categoryIcon}>
                   {getCategoryIcon(request.category)}
                 </Text>

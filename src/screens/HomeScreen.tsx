@@ -355,12 +355,23 @@ export default function HomeScreen({ navigation, route }: any) {
                     <View style={styles.requestHeader}>
                       <View style={styles.requestLeft}>
                         <View style={styles.requestTitleRow}>
-                          <Avatar 
-                            size="small" 
-                            name={request.userName}
-                            style={styles.requestAvatar}
-                          />
-                          <Text style={styles.requestTitle} numberOfLines={2}>{request.body}</Text>
+                          <TouchableOpacity
+                            onPress={() => navigation.navigate('UserProfile', { 
+                              userName, 
+                              otherUserName: request.userName,
+                              isOwnProfile: request.isOwn 
+                            })}
+                          >
+                            <Avatar 
+                              size="medium" 
+                              name={request.userName}
+                              style={styles.requestAvatar}
+                            />
+                          </TouchableOpacity>
+                          <Text style={styles.categoryIcon}>
+                            {getCategoryIcon(request.category)}
+                          </Text>
+                          <Text style={styles.requestTitle}>{request.body}</Text>
                         </View>
                         <Text style={styles.requestTime}>{request.createdAt}</Text>
                       </View>

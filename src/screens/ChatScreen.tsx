@@ -187,11 +187,19 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
             <Ionicons name="arrow-back" size={24} color="#2BB673" />
           </TouchableOpacity>
           <View style={styles.headerInfo}>
-            <Avatar 
-              size={40} 
-              name={otherUserName} 
-              style={styles.headerAvatar}
-            />
+            <TouchableOpacity
+              onPress={() => navigation.navigate('UserProfile', { 
+                userName, 
+                otherUserName,
+                isOwnProfile: false 
+              })}
+            >
+              <Avatar 
+                size={40} 
+                name={otherUserName} 
+                style={styles.headerAvatar}
+              />
+            </TouchableOpacity>
             <View style={styles.headerText}>
               <Text style={styles.headerName}>{otherUserName}</Text>
               <Text style={styles.headerStatus}>Active now</Text>
