@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +16,76 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function ProfileScreen({ navigation, route }: any) {
   const notify = useNotify();
   const userName = route?.params?.userName || 'Your Name';
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [tempPhoneNumber, setTempPhoneNumber] = useState('');
+
+  // Load phone number from storage on component mount
+  React.useEffect(() => {
+    loadPhoneNumber();
+  }, []);
+
+  const loadPhoneNumber = async () => {
+    try {
+      const savedPhone = await AsyncStorage.getItem(`phoneNumber_${userName}`);
+      if (savedPhone) {
+        setPhoneNumber(savedPhone);
+      }
+    } catch (error) {
+      console.log('Error loading phone number:', error);
+    }
+  };
+
+  const savePhoneNumber = async (newPhoneNumber: string) => {
+    try {
+      await AsyncStorage.setItem(`phoneNumber_${userName}`, newPhoneNumber);
+      setPhoneNumber(newPhoneNumber);
+      setIsEditingPhone(false);
+      notify.banner({
+        title: 'Phone Number Saved',
+        message: 'Your phone number has been updated.',
+        type: 'success',
+        durationMs: 3000
+      });
+    } catch (error) {
+      notify.banner({
+        title: 'Error',
+        message: 'Failed to save phone number. Please try again.',
+        type: 'error',
+        durationMs: 4000
+      });
+    }
+  };
+
+  const handlePhoneNumberPress = () => {
+    if (phoneNumber) {
+      // Show current phone number with edit option
+      setIsEditingPhone(true);
+      setTempPhoneNumber(phoneNumber);
+    } else {
+      // Add new phone number
+      setIsEditingPhone(true);
+      setTempPhoneNumber('');
+    }
+  };
+
+  const handleSavePhoneNumber = () => {
+    if (tempPhoneNumber.trim()) {
+      savePhoneNumber(tempPhoneNumber.trim());
+    } else {
+      notify.banner({
+        title: 'Invalid Phone Number',
+        message: 'Please enter a valid phone number.',
+        type: 'warning',
+        durationMs: 3000
+      });
+    }
+  };
+
+  const handleCancelPhoneEdit = () => {
+    setIsEditingPhone(false);
+    setTempPhoneNumber('');
+  };
 
 
   const handleBackPress = () => {
@@ -90,6 +161,66 @@ export default function ProfileScreen({ navigation, route }: any) {
           </View>
         </View>
 
+        {/* Phone Number Section */}
+        <View style={styles.phoneSection}>
+          <Text style={styles.sectionTitle}>Contact Information</Text>
+          
+          {!isEditingPhone ? (
+            <TouchableOpacity
+              style={styles.phoneCard}
+              onPress={handlePhoneNumberPress}
+            >
+              <View style={styles.phoneContent}>
+                <Ionicons name="call" size={24} color="#2BB673" />
+                <View style={styles.phoneInfo}>
+                  <Text style={styles.phoneLabel}>Phone Number</Text>
+                  <Text style={styles.phoneNumber}>
+                    {phoneNumber || 'No phone number added'}
+                  </Text>
+                </View>
+                <Ionicons 
+                  name={phoneNumber ? "create" : "add"} 
+                  size={20} 
+                  color="#6B7280" 
+                />
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.phoneEditCard}>
+              <View style={styles.phoneEditContent}>
+                <Ionicons name="call" size={24} color="#2BB673" />
+                <View style={styles.phoneEditInfo}>
+                  <Text style={styles.phoneLabel}>
+                    {phoneNumber ? 'Edit Phone Number' : 'Add Phone Number'}
+                  </Text>
+                  <TextInput
+                    style={styles.phoneInput}
+                    value={tempPhoneNumber}
+                    onChangeText={setTempPhoneNumber}
+                    placeholder="Enter phone number"
+                    placeholderTextColor="#9CA3AF"
+                    keyboardType="phone-pad"
+                    autoFocus
+                  />
+                </View>
+              </View>
+              <View style={styles.phoneEditActions}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={handleCancelPhoneEdit}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={handleSavePhoneNumber}
+                >
+                  <Text style={styles.saveButtonText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </View>
 
 
         <View style={styles.actionsSection}>
@@ -509,14 +640,13 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   cancelButton: {
-    backgroundColor: '#ecf0f1',
+    backgroundColor: '#F3F4F6',
     paddingHorizontal: 28,
     paddingVertical: 16,
     borderRadius: 24,
-    marginRight: 12,
   },
   cancelButtonText: {
-    color: '#34495e',
+    color: '#6B7280',
     fontSize: 18,
     fontWeight: '600',
   },
@@ -531,5 +661,89 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: '600',
+  },
+  phoneSection: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  phoneCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  phoneContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  phoneInfo: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  phoneLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  phoneNumber: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#4D4D4D',
+  },
+  phoneEditCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  phoneEditContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  phoneEditInfo: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  phoneInput: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#374151',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#F9FAFB',
+  },
+  phoneEditActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  saveButton: {
+    backgroundColor: '#27ae60',
+    paddingHorizontal: 28,
+    paddingVertical: 16,
+    borderRadius: 24,
+    marginLeft: 12,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 16,
   },
 });
