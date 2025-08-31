@@ -36,6 +36,8 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [acceptedOffers, setAcceptedOffers] = useState<string[]>([]);
+  const [declinedOffers, setDeclinedOffers] = useState<string[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
   
   const { request, helper, userName, offer } = route.params;
@@ -129,6 +131,8 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   };
 
   const handleAcceptOffer = (offerId: string) => {
+    if (acceptedOffers.includes(offerId)) return;
+
     // Add accept message to chat
     const acceptMessage: Message = {
       id: `accept-${Date.now()}`,
@@ -142,6 +146,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
     };
 
     setMessages(prev => [...prev, acceptMessage]);
+    setAcceptedOffers(prev => [...prev, offerId]);
     
     // Show success notification
     notify.banner({
@@ -158,6 +163,8 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   };
 
   const handleDeclineOffer = (offerId: string) => {
+    if (declinedOffers.includes(offerId)) return;
+
     // Add decline message to chat
     const declineMessage: Message = {
       id: `decline-${Date.now()}`,
@@ -171,6 +178,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
     };
 
     setMessages(prev => [...prev, declineMessage]);
+    setDeclinedOffers(prev => [...prev, offerId]);
     
     // Show info notification
     notify.banner({
@@ -260,18 +268,32 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
                     <Text style={styles.offerText}>{msg.offerNote}</Text>
                     {!msg.isOwn && (
                       <View style={styles.offerActions}>
-                        <TouchableOpacity
-                          style={styles.acceptButton}
-                          onPress={() => handleAcceptOffer(msg.offerId!)}
-                        >
-                          <Text style={styles.acceptButtonText}>Accept</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.declineButton}
-                          onPress={() => handleDeclineOffer(msg.offerId!)}
-                        >
-                          <Text style={styles.declineButtonText}>Decline</Text>
-                        </TouchableOpacity>
+                        {!acceptedOffers.includes(msg.offerId!) && !declinedOffers.includes(msg.offerId!) && (
+                          <>
+                            <TouchableOpacity
+                              style={styles.acceptButton}
+                              onPress={() => handleAcceptOffer(msg.offerId!)}
+                            >
+                              <Text style={styles.acceptButtonText}>Accept</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={styles.declineButton}
+                              onPress={() => handleDeclineOffer(msg.offerId!)}
+                            >
+                              <Text style={styles.declineButtonText}>Decline</Text>
+                            </TouchableOpacity>
+                          </>
+                        )}
+                        {acceptedOffers.includes(msg.offerId!) && (
+                          <View style={styles.acceptedButton}>
+                            <Text style={styles.acceptedButtonText}>Accepted</Text>
+                          </View>
+                        )}
+                        {declinedOffers.includes(msg.offerId!) && (
+                          <View style={styles.declinedButton}>
+                            <Text style={styles.declinedButtonText}>Declined</Text>
+                          </View>
+                        )}
                       </View>
                     )}
                   </View>
@@ -482,11 +504,13 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     padding: 12,
     marginBottom: 8,
+    width: '100%', // Full width for offer messages
   },
   offerContent: {
     backgroundColor: '#E0F2FE',
     borderRadius: 10,
     padding: 12,
+    width: '100%', // Full width
   },
   offerTitle: {
     fontSize: 14,
@@ -502,12 +526,16 @@ const styles = StyleSheet.create({
   offerActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    width: '100%', // Full width
   },
   acceptButton: {
     backgroundColor: '#2BB673',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
+    flex: 1,
+    marginRight: 8,
+    alignItems: 'center',
   },
   acceptButtonText: {
     color: '#FFFFFF',
@@ -519,6 +547,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
+    flex: 1,
+    marginLeft: 8,
+    alignItems: 'center',
   },
   declineButtonText: {
     color: '#FFFFFF',
@@ -530,5 +561,31 @@ const styles = StyleSheet.create({
   },
   declineText: {
     color: '#EF4444',
+  },
+  acceptedButton: {
+    backgroundColor: '#2BB673',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    width: '100%', // Full width
+    alignItems: 'center',
+  },
+  acceptedButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  declinedButton: {
+    backgroundColor: '#EF4444',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    width: '100%', // Full width
+    alignItems: 'center',
+  },
+  declinedButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
