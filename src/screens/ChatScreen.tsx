@@ -21,6 +21,9 @@ interface Message {
   senderName: string;
   timestamp: string;
   isOwn: boolean;
+  type?: 'text' | 'offer' | 'accept' | 'decline';
+  offerId?: string;
+  offerNote?: string;
 }
 
 interface ChatScreenProps {
@@ -35,47 +38,70 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   
-  const { request, helper, userName } = route.params;
+  const { request, helper, userName, offer } = route.params;
   const otherUserName = helper ? helper.name : request.userName;
 
-  // Mock messages data
+  // Mock messages data with offers
   useEffect(() => {
-    const mockMessages: Message[] = [
-      {
-        id: '1',
-        text: 'Hi! I can help you with this request.',
+    let mockMessages: Message[] = [];
+    
+    // If this is an offer chat, start with the offer message
+    if (offer) {
+      mockMessages.push({
+        id: 'offer-1',
+        text: `I can help with: ${request.body}`,
         senderId: 'helper',
         senderName: otherUserName,
         timestamp: '2 hours ago',
         isOwn: false,
-      },
-      {
-        id: '2',
-        text: 'That would be great! When are you available?',
-        senderId: 'user',
-        senderName: userName,
-        timestamp: '1 hour ago',
-        isOwn: true,
-      },
-      {
-        id: '3',
-        text: 'I can come tomorrow afternoon around 2 PM. Does that work for you?',
-        senderId: 'helper',
-        senderName: otherUserName,
-        timestamp: '30 minutes ago',
-        isOwn: false,
-      },
-      {
-        id: '4',
-        text: 'Perfect! That works great. I\'ll see you then.',
-        senderId: 'user',
-        senderName: userName,
-        timestamp: 'Just now',
-        isOwn: true,
-      },
-    ];
+        type: 'offer',
+        offerId: offer.id,
+        offerNote: offer.note,
+      });
+    } else {
+      // Regular chat messages
+      mockMessages = [
+        {
+          id: '1',
+          text: 'Hi! I can help you with this request.',
+          senderId: 'helper',
+          senderName: otherUserName,
+          timestamp: '2 hours ago',
+          isOwn: false,
+          type: 'text',
+        },
+        {
+          id: '2',
+          text: 'That would be great! When are you available?',
+          senderId: 'user',
+          senderName: userName,
+          timestamp: '1 hour ago',
+          isOwn: true,
+          type: 'text',
+        },
+        {
+          id: '3',
+          text: 'I can come tomorrow afternoon around 2 PM. Does that work for you?',
+          senderId: 'helper',
+          senderName: otherUserName,
+          timestamp: '30 minutes ago',
+          isOwn: false,
+          type: 'text',
+        },
+        {
+          id: '4',
+          text: 'Perfect! That works great. I\'ll see you then.',
+          senderId: 'user',
+          senderName: userName,
+          timestamp: 'Just now',
+          isOwn: true,
+          type: 'text',
+        },
+      ];
+    }
+    
     setMessages(mockMessages);
-  }, [otherUserName, userName]);
+  }, [otherUserName, userName, offer, request]);
 
   const sendMessage = () => {
     if (!message.trim()) return;
@@ -87,6 +113,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
       senderName: userName,
       timestamp: 'Just now',
       isOwn: true,
+      type: 'text',
     };
 
     setMessages(prev => [...prev, newMessage]);
@@ -99,6 +126,64 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
 
     // Show success toast
     notify.toast({ message: 'Message sent!' });
+  };
+
+  const handleAcceptOffer = (offerId: string) => {
+    // Add accept message to chat
+    const acceptMessage: Message = {
+      id: `accept-${Date.now()}`,
+      text: 'Offer accepted! I\'ll contact you soon.',
+      senderId: 'user',
+      senderName: userName,
+      timestamp: 'Just now',
+      isOwn: true,
+      type: 'accept',
+      offerId: offerId,
+    };
+
+    setMessages(prev => [...prev, acceptMessage]);
+    
+    // Show success notification
+    notify.banner({
+      title: 'Offer Accepted!',
+      message: `${otherUserName} will contact you soon. They earned +10 karma points!`,
+      type: 'success',
+      durationMs: 5000
+    });
+
+    // Auto-scroll to bottom
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  };
+
+  const handleDeclineOffer = (offerId: string) => {
+    // Add decline message to chat
+    const declineMessage: Message = {
+      id: `decline-${Date.now()}`,
+      text: 'Thank you for your offer, but I\'ve decided to go with someone else.',
+      senderId: 'user',
+      senderName: userName,
+      timestamp: 'Just now',
+      isOwn: true,
+      type: 'decline',
+      offerId: offerId,
+    };
+
+    setMessages(prev => [...prev, declineMessage]);
+    
+    // Show info notification
+    notify.banner({
+      title: 'Offer Declined',
+      message: 'You have declined this offer.',
+      type: 'info',
+      durationMs: 4000
+    });
+
+    // Auto-scroll to bottom
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
   };
 
   const formatTime = (timestamp: string) => {
@@ -163,17 +248,48 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
               <View
                 style={[
                   styles.messageBubble,
-                  msg.isOwn ? styles.ownBubble : styles.otherBubble
+                  msg.isOwn ? styles.ownBubble : styles.otherBubble,
+                  msg.type === 'offer' && styles.offerBubble,
+                  msg.type === 'accept' && styles.acceptBubble,
+                  msg.type === 'decline' && styles.declineBubble,
                 ]}
               >
-                <Text
-                  style={[
-                    styles.messageText,
-                    msg.isOwn ? styles.ownText : styles.otherText
-                  ]}
-                >
-                  {msg.text}
-                </Text>
+                {msg.type === 'offer' && (
+                  <View style={styles.offerContent}>
+                    <Text style={styles.offerTitle}>Help Offer</Text>
+                    <Text style={styles.offerText}>{msg.offerNote}</Text>
+                    {!msg.isOwn && (
+                      <View style={styles.offerActions}>
+                        <TouchableOpacity
+                          style={styles.acceptButton}
+                          onPress={() => handleAcceptOffer(msg.offerId!)}
+                        >
+                          <Text style={styles.acceptButtonText}>Accept</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.declineButton}
+                          onPress={() => handleDeclineOffer(msg.offerId!)}
+                        >
+                          <Text style={styles.declineButtonText}>Decline</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                )}
+                
+                {msg.type !== 'offer' && (
+                  <Text
+                    style={[
+                      styles.messageText,
+                      msg.isOwn ? styles.ownText : styles.otherText,
+                      msg.type === 'accept' && styles.acceptText,
+                      msg.type === 'decline' && styles.declineText,
+                    ]}
+                  >
+                    {msg.text}
+                  </Text>
+                )}
+                
                 <Text
                   style={[
                     styles.messageTime,
@@ -359,5 +475,60 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: '#E5E7EB',
+  },
+  offerBubble: {
+    backgroundColor: '#E0F2FE', // Light blue background for offers
+    borderBottomRightRadius: 4,
+    borderBottomLeftRadius: 4,
+    padding: 12,
+    marginBottom: 8,
+  },
+  offerContent: {
+    backgroundColor: '#E0F2FE',
+    borderRadius: 10,
+    padding: 12,
+  },
+  offerTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  offerText: {
+    fontSize: 14,
+    color: '#374151',
+    marginBottom: 12,
+  },
+  offerActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  acceptButton: {
+    backgroundColor: '#2BB673',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  acceptButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  declineButton: {
+    backgroundColor: '#EF4444',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  declineButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  acceptText: {
+    color: '#2BB673',
+  },
+  declineText: {
+    color: '#EF4444',
   },
 });

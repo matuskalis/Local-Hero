@@ -127,14 +127,17 @@ export default function InboxScreen({ navigation, route }: any) {
         userName
       });
     } else if (message.type === 'offer') {
-      // Find the actual request with offers
+      // Find the actual request and offer
       const request = sharedRequests.find(req => req.id === message.requestId);
-      if (request) {
-        // Navigate to request detail to see and manage the offer
-        navigation.navigate('RequestDetail', {
+      const offer = request?.offers?.find(off => off.id === message.offerId);
+      
+      if (request && offer) {
+        // Navigate to chat with offer data
+        navigation.navigate('Chat', {
           request: request,
+          helper: { name: offer.helperName },
           userName: userName,
-          showOffers: true, // Auto-show offers
+          offer: offer,
         });
       }
     } else if (message.type === 'request') {

@@ -126,8 +126,14 @@ export default function RequestDetailScreen({ navigation, route }: any) {
         durationMs: 5000
       });
       
-      // Don't navigate away - let user stay on this screen
-      // User can navigate back manually when they want
+      // Automatically navigate to chat with the offer
+      navigation.navigate('Chat', {
+        request: request,
+        helper: { name: request.userName },
+        userName: userName,
+        offer: newOffer,
+      });
+      
     } catch (error) {
       notify.banner({
         title: 'Error',
