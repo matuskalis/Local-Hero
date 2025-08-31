@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -44,8 +44,10 @@ export default function RequestDetailScreen({ navigation, route }: any) {
   const request: Request = route.params?.request;
   const userName = route.params?.userName || 'Your Name';
 
-  // Use offers from request data if available, otherwise use mock offers
-  const requestOffers = request?.offers || [];
+  // Use useMemo to prevent infinite re-renders
+  const requestOffers = useMemo(() => {
+    return request?.offers || [];
+  }, [request?.offers]);
   
   // Mock offers data - fallback if no offers in request
   const mockOffers: Offer[] = [
@@ -69,14 +71,14 @@ export default function RequestDetailScreen({ navigation, route }: any) {
     },
   ];
 
-  // Initialize offers with request offers or mock offers
+  // Initialize offers with request offers or mock offers - only once
   useEffect(() => {
     if (requestOffers.length > 0) {
       setOffers(requestOffers);
     } else {
       setOffers(mockOffers);
     }
-  }, [requestOffers]);
+  }, [requestOffers.length]); // Only depend on length, not the array itself
 
   const handleNoteContentSizeChange = (event: any) => {
     const height = Math.max(60, event.nativeEvent.contentSize.height);
@@ -105,15 +107,8 @@ export default function RequestDetailScreen({ navigation, route }: any) {
         createdAt: 'Just now',
       };
 
-      // Add to local state
+      // Add to local state only - don't modify request data directly
       setOffers(prev => [newOffer, ...prev]);
-      
-      // Also add to request data if it exists
-      if (request.offers) {
-        request.offers.unshift(newOffer);
-      } else {
-        request.offers = [newOffer];
-      }
       
       // Reset form
       setNote('');
