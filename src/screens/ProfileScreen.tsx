@@ -135,6 +135,49 @@ export default function ProfileScreen({ navigation, route }: any) {
             </TouchableOpacity>
             <Text style={styles.userName}>{userName}</Text>
             <Text style={styles.userLocation}>📍 Melstone, MT</Text>
+            
+            {/* Phone Number Section */}
+            {!isEditingPhone ? (
+              <TouchableOpacity
+                style={styles.phoneContainer}
+                onPress={handlePhoneNumberPress}
+              >
+                <Text style={styles.userPhone}>
+                  📞 {phoneNumber || 'No phone number added'}
+                </Text>
+                <Ionicons 
+                  name={phoneNumber ? "create" : "add"} 
+                  size={16} 
+                  color="#6B7280" 
+                />
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.editPhoneContainer}>
+                <TextInput
+                  style={styles.phoneInput}
+                  value={tempPhoneNumber}
+                  onChangeText={setTempPhoneNumber}
+                  placeholder="Enter phone number"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="phone-pad"
+                  autoFocus
+                />
+                <View style={styles.editPhoneActions}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={handleCancelPhoneEdit}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.saveButton}
+                    onPress={handleSavePhoneNumber}
+                  >
+                    <Text style={styles.saveButtonText}>Save</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
         </View>
 
@@ -160,68 +203,6 @@ export default function ProfileScreen({ navigation, route }: any) {
             </View>
           </View>
         </View>
-
-        {/* Phone Number Section */}
-        <View style={styles.phoneSection}>
-          <Text style={styles.sectionTitle}>Contact Information</Text>
-          
-          {!isEditingPhone ? (
-            <TouchableOpacity
-              style={styles.phoneCard}
-              onPress={handlePhoneNumberPress}
-            >
-              <View style={styles.phoneContent}>
-                <Ionicons name="call" size={24} color="#2BB673" />
-                <View style={styles.phoneInfo}>
-                  <Text style={styles.phoneLabel}>Phone Number</Text>
-                  <Text style={styles.phoneNumber}>
-                    {phoneNumber || 'No phone number added'}
-                  </Text>
-                </View>
-                <Ionicons 
-                  name={phoneNumber ? "create" : "add"} 
-                  size={20} 
-                  color="#6B7280" 
-                />
-              </View>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.phoneEditCard}>
-              <View style={styles.phoneEditContent}>
-                <Ionicons name="call" size={24} color="#2BB673" />
-                <View style={styles.phoneEditInfo}>
-                  <Text style={styles.phoneLabel}>
-                    {phoneNumber ? 'Edit Phone Number' : 'Add Phone Number'}
-                  </Text>
-                  <TextInput
-                    style={styles.phoneInput}
-                    value={tempPhoneNumber}
-                    onChangeText={setTempPhoneNumber}
-                    placeholder="Enter phone number"
-                    placeholderTextColor="#9CA3AF"
-                    keyboardType="phone-pad"
-                    autoFocus
-                  />
-                </View>
-              </View>
-              <View style={styles.phoneEditActions}>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={handleCancelPhoneEdit}
-                >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={handleSavePhoneNumber}
-                >
-                  <Text style={styles.saveButtonText}>Save</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-        </View>
-
 
         <View style={styles.actionsSection}>
           <TouchableOpacity
@@ -344,9 +325,39 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#7f8c8d',
   },
+  userPhone: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginRight: 8,
+  },
+  phoneContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  editPhoneContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  phoneInput: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#F9FAFB',
+    marginBottom: 12,
+  },
+  editPhoneActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
   statsSection: {
-    paddingHorizontal: 16, // Reduced from 20 to 16
-    marginBottom: 16, // Reduced from 20 to 16
+    paddingHorizontal: 16,
+    marginBottom: 16,
   },
   karmaCard: {
     backgroundColor: '#FFFFFF',
@@ -421,12 +432,6 @@ const styles = StyleSheet.create({
   requestsSection: {
     paddingHorizontal: 20,
     marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 20,
   },
   requestCard: {
     backgroundColor: '#FFFFFF',
@@ -661,89 +666,5 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: '600',
-  },
-  phoneSection: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
-  },
-  phoneCard: {
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  phoneContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  phoneInfo: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  phoneLabel: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 4,
-  },
-  phoneNumber: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#4D4D4D',
-  },
-  phoneEditCard: {
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  phoneEditContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  phoneEditInfo: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  phoneInput: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#374151',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#F9FAFB',
-  },
-  phoneEditActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  saveButton: {
-    backgroundColor: '#27ae60',
-    paddingHorizontal: 28,
-    paddingVertical: 16,
-    borderRadius: 24,
-    marginLeft: 12,
-  },
-  saveButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 16,
   },
 });
