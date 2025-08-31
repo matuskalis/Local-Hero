@@ -226,11 +226,6 @@ export default function HomeScreen({ navigation, route }: any) {
         <View style={styles.headerDivider} />
       </View>
 
-      {/* Hello Section */}
-      <View style={styles.helloSection}>
-        <Text style={styles.helloText}>Hello, {userName}!</Text>
-      </View>
-
       {/* Tab Switcher */}
       <View style={styles.tabSwitcher}>
         <TouchableOpacity
@@ -604,6 +599,13 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6', // Subtle light gray border
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   annPinned: {
     borderLeftWidth: 6,
@@ -700,7 +702,13 @@ const styles = StyleSheet.create({
     padding: 24,
     borderRadius: 20,
     marginBottom: 24,
-    // Removed borderWidth: 1 and borderColor: '#E5E7EB' to eliminate gray lines
+    borderWidth: 1,
+    borderColor: '#F3F4F6', // Subtle light gray border
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   ownRequestCard: {
     borderLeftWidth: 6,
