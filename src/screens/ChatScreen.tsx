@@ -133,19 +133,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   const handleAcceptOffer = (offerId: string) => {
     if (acceptedOffers.includes(offerId)) return;
 
-    // Add accept message to chat
-    const acceptMessage: Message = {
-      id: `accept-${Date.now()}`,
-      text: 'Offer accepted! I\'ll contact you soon.',
-      senderId: 'user',
-      senderName: userName,
-      timestamp: 'Just now',
-      isOwn: true,
-      type: 'accept',
-      offerId: offerId,
-    };
-
-    setMessages(prev => [...prev, acceptMessage]);
+    // Just update the state - no automatic message
     setAcceptedOffers(prev => [...prev, offerId]);
     
     // Show success notification
@@ -165,19 +153,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   const handleDeclineOffer = (offerId: string) => {
     if (declinedOffers.includes(offerId)) return;
 
-    // Add decline message to chat
-    const declineMessage: Message = {
-      id: `decline-${Date.now()}`,
-      text: 'Thank you for your offer, but I\'ve decided to go with someone else.',
-      senderId: 'user',
-      senderName: userName,
-      timestamp: 'Just now',
-      isOwn: true,
-      type: 'decline',
-      offerId: offerId,
-    };
-
-    setMessages(prev => [...prev, declineMessage]);
+    // Just update the state - no automatic message
     setDeclinedOffers(prev => [...prev, offerId]);
     
     // Show info notification
@@ -258,8 +234,6 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
                   styles.messageBubble,
                   msg.isOwn ? styles.ownBubble : styles.otherBubble,
                   msg.type === 'offer' && styles.offerBubble,
-                  msg.type === 'accept' && styles.acceptBubble,
-                  msg.type === 'decline' && styles.declineBubble,
                 ]}
               >
                 {msg.type === 'offer' && (
@@ -304,8 +278,6 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
                     style={[
                       styles.messageText,
                       msg.isOwn ? styles.ownText : styles.otherText,
-                      msg.type === 'accept' && styles.acceptText,
-                      msg.type === 'decline' && styles.declineText,
                     ]}
                   >
                     {msg.text}
@@ -555,12 +527,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
-  },
-  acceptText: {
-    color: '#2BB673',
-  },
-  declineText: {
-    color: '#EF4444',
   },
   acceptedButton: {
     backgroundColor: '#2BB673',
