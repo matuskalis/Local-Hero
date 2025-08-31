@@ -205,7 +205,6 @@ export default function ProfileScreen({ navigation, route }: any) {
                 onPress={handleNamePress}
               >
                 <Text style={styles.userName}>{tempName}</Text>
-                <Ionicons name="create" size={16} color="#6B7280" />
               </TouchableOpacity>
             ) : (
               <View style={styles.editNameContainer}>
@@ -241,7 +240,6 @@ export default function ProfileScreen({ navigation, route }: any) {
                 onPress={handleLocationPress}
               >
                 <Text style={styles.userLocation}>📍 {tempLocation}</Text>
-                <Ionicons name="create" size={16} color="#6B7280" />
               </TouchableOpacity>
             ) : (
               <View style={styles.editLocationContainer}>
@@ -279,11 +277,6 @@ export default function ProfileScreen({ navigation, route }: any) {
                 <Text style={styles.userPhone}>
                   📞 {phoneNumber || 'No phone number added'}
                 </Text>
-                <Ionicons 
-                  name={phoneNumber ? "create" : "add"} 
-                  size={16} 
-                  color="#6B7280" 
-                />
               </TouchableOpacity>
             ) : (
               <View style={styles.editPhoneContainer}>
