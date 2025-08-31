@@ -51,6 +51,20 @@ export let sharedRequests: any[] = [
     isOwn: true,
     category: 'yard',
     status: 'open',
+    offers: [ // Added offers for your request!
+      {
+        id: '1',
+        helperName: 'Sarah Wilson',
+        note: 'I can help with this! I have experience with yard work and I\'m available this weekend.',
+        createdAt: '2 hours ago',
+      },
+      {
+        id: '2',
+        helperName: 'Mike Johnson',
+        note: 'I\'d be happy to help. I have all the necessary tools.',
+        createdAt: '1 day ago',
+      },
+    ],
   },
 ];
 
