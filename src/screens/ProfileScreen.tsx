@@ -824,13 +824,26 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     backgroundColor: '#F3F4F6',
-    paddingHorizontal: 28,
-    paddingVertical: 16,
-    borderRadius: 24,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginHorizontal: 4,
   },
   cancelButtonText: {
     color: '#6B7280',
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveButton: {
+    backgroundColor: '#F3F4F6',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginHorizontal: 4,
+  },
+  saveButtonText: {
+    color: '#6B7280',
+    fontSize: 16,
     fontWeight: '600',
   },
   confirmDeleteButton: {
