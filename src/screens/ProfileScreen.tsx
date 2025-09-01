@@ -1,12 +1,5 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from '../ui/components';
@@ -151,6 +144,20 @@ export default function ProfileScreen({ navigation, route }: any) {
     setTempLocation('Melstone, MT');
   };
 
+  const handleOutsideClick = () => {
+    // Cancel all editing modes when clicking outside
+    if (isEditingName) {
+      handleCancelNameEdit();
+    }
+    if (isEditingLocation) {
+      handleCancelLocationEdit();
+    }
+    if (isEditingPhone) {
+      handleCancelPhoneEdit();
+    }
+    Keyboard.dismiss();
+  };
+
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -171,6 +178,39 @@ export default function ProfileScreen({ navigation, route }: any) {
     });
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account? This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await AsyncStorage.removeItem('userName');
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'NameInput' }],
+              });
+            } catch (error) {
+              notify.banner({
+                title: 'Error',
+                message: 'Failed to delete account. Please try again.',
+                type: 'error',
+                durationMs: 4000
+              });
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       {/* White Header */}
@@ -188,191 +228,193 @@ export default function ProfileScreen({ navigation, route }: any) {
         <View style={styles.headerDivider} />
       </View>
 
-      <ScrollView style={styles.content}>
-        <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
+      <TouchableWithoutFeedback onPress={handleOutsideClick}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.profileSection}>
+            <View style={styles.avatarContainer}>
+              <TouchableOpacity
+                style={styles.avatar}
+                onPress={handleProfilePicturePress}
+              >
+                <Ionicons name="person" size={64} color="white" />
+              </TouchableOpacity>
+              
+              {/* Name Section */}
+              {!isEditingName ? (
+                <TouchableOpacity
+                  style={styles.nameContainer}
+                  onPress={handleNamePress}
+                >
+                  <Text style={styles.userName}>{tempName}</Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.editNameContainer}>
+                  <TextInput
+                    style={styles.nameInput}
+                    value={tempName}
+                    onChangeText={setTempName}
+                    placeholder="Enter name"
+                    placeholderTextColor="#9CA3AF"
+                    autoFocus
+                  />
+                  <View style={styles.editNameActions}>
+                    <TouchableOpacity
+                      style={styles.cancelButton}
+                      onPress={handleCancelNameEdit}
+                    >
+                      <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.saveButton}
+                      onPress={handleSaveName}
+                    >
+                      <Text style={styles.saveButtonText}>Save</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
+              {/* Location Section */}
+              {!isEditingLocation ? (
+                <TouchableOpacity
+                  style={styles.locationContainer}
+                  onPress={handleLocationPress}
+                >
+                  <Text style={styles.userLocation}>📍 {tempLocation}</Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.editLocationContainer}>
+                  <TextInput
+                    style={styles.locationInput}
+                    value={tempLocation}
+                    onChangeText={setTempLocation}
+                    placeholder="Enter location"
+                    placeholderTextColor="#9CA3AF"
+                    autoFocus
+                  />
+                  <View style={styles.editLocationActions}>
+                    <TouchableOpacity
+                      style={styles.cancelButton}
+                      onPress={handleCancelLocationEdit}
+                    >
+                      <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.saveButton}
+                      onPress={handleSaveLocation}
+                    >
+                      <Text style={styles.saveButtonText}>Save</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+              
+              {/* Phone Number Section */}
+              {!isEditingPhone ? (
+                <TouchableOpacity
+                  style={styles.phoneContainer}
+                  onPress={handlePhoneNumberPress}
+                >
+                  <Text style={styles.userPhone}>
+                    📞 {phoneNumber || 'No phone number added'}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.editPhoneContainer}>
+                  <TextInput
+                    style={styles.phoneInput}
+                    value={tempPhoneNumber}
+                    onChangeText={setTempPhoneNumber}
+                    placeholder="Enter phone number"
+                    placeholderTextColor="#9CA3AF"
+                    keyboardType="phone-pad"
+                    autoFocus
+                  />
+                  <View style={styles.editPhoneActions}>
+                    <TouchableOpacity
+                      style={styles.cancelButton}
+                      onPress={handleCancelPhoneEdit}
+                    >
+                      <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.saveButton}
+                      onPress={handleSavePhoneNumber}
+                    >
+                      <Text style={styles.saveButtonText}>Save</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Stats Section */}
+          <View style={styles.statsSection}>
+            <View style={styles.karmaCard}>
+              <Ionicons name="star" size={32} color="#FFD700" />
+              <Text style={styles.karmaNumber}>25</Text>
+              <Text style={styles.karmaLabel}>Karma Points Collected</Text>
+            </View>
+            <View style={styles.statsRow}>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>5</Text>
+                <Text style={styles.statLabel}>Requests</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>12</Text>
+                <Text style={styles.statLabel}>Responses</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>3</Text>
+                <Text style={styles.statLabel}>People Helped</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Actions Section */}
+          <View style={styles.actionsSection}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleCreateNewRequest}>
+              <Ionicons name="add-circle" size={32} color="white" />
+              <Text style={styles.actionButtonText}>Create New Request</Text>
+            </TouchableOpacity>
             <TouchableOpacity
-              style={styles.avatar}
-              onPress={handleProfilePicturePress}
+              style={styles.leaderboardButton}
+              onPress={() => navigation.navigate('Leaderboard', { userName })}
             >
-              <Ionicons name="person" size={64} color="white" />
+              <Ionicons name="trophy" size={24} color="#2BB673" />
+              <Text style={styles.leaderboardButtonText}>View Leaderboard</Text>
             </TouchableOpacity>
             
-            {/* Name Section */}
-            {!isEditingName ? (
-              <TouchableOpacity
-                style={styles.nameContainer}
-                onPress={handleNamePress}
-              >
-                <Text style={styles.userName}>{tempName}</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.editNameContainer}>
-                <TextInput
-                  style={styles.nameInput}
-                  value={tempName}
-                  onChangeText={setTempName}
-                  placeholder="Enter name"
-                  placeholderTextColor="#9CA3AF"
-                  autoFocus
-                />
-                <View style={styles.editNameActions}>
-                  <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={handleCancelNameEdit}
-                  >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.saveButton}
-                    onPress={handleSaveName}
-                  >
-                    <Text style={styles.saveButtonText}>Save</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-
-            {/* Location Section */}
-            {!isEditingLocation ? (
-              <TouchableOpacity
-                style={styles.locationContainer}
-                onPress={handleLocationPress}
-              >
-                <Text style={styles.userLocation}>📍 {tempLocation}</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.editLocationContainer}>
-                <TextInput
-                  style={styles.locationInput}
-                  value={tempLocation}
-                  onChangeText={setTempLocation}
-                  placeholder="Enter location"
-                  placeholderTextColor="#9CA3AF"
-                  autoFocus
-                />
-                <View style={styles.editLocationActions}>
-                  <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={handleCancelLocationEdit}
-                  >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.saveButton}
-                    onPress={handleSaveLocation}
-                  >
-                    <Text style={styles.saveButtonText}>Save</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-            
-            {/* Phone Number Section */}
-            {!isEditingPhone ? (
-              <TouchableOpacity
-                style={styles.phoneContainer}
-                onPress={handlePhoneNumberPress}
-              >
-                <Text style={styles.userPhone}>
-                  📞 {phoneNumber || 'No phone number added'}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.editPhoneContainer}>
-                <TextInput
-                  style={styles.phoneInput}
-                  value={tempPhoneNumber}
-                  onChangeText={setTempPhoneNumber}
-                  placeholder="Enter phone number"
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="phone-pad"
-                  autoFocus
-                />
-                <View style={styles.editPhoneActions}>
-                  <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={handleCancelPhoneEdit}
-                  >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.saveButton}
-                    onPress={handleSavePhoneNumber}
-                  >
-                    <Text style={styles.saveButtonText}>Save</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={async () => {
+                try {
+                  await AsyncStorage.removeItem('userName');
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'NameInput' }],
+                  });
+                } catch (error) {
+                  notify.banner({
+                    title: 'Error',
+                    message: 'Failed to logout. Please try again.',
+                    type: 'error',
+                    durationMs: 4000
+                  });
+                }
+              }}
+            >
+              <Ionicons name="log-out" size={24} color="#E5484D" />
+              <Text style={styles.logoutButtonText}>Logout</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
+              <Ionicons name="trash" size={24} color="white" />
+              <Text style={styles.deleteButtonText}>Delete Account</Text>
+            </TouchableOpacity>
           </View>
-        </View>
-
-        <View style={styles.statsSection}>
-          <View style={styles.karmaCard}>
-            <Ionicons name="star" size={32} color="#FFD700" />
-            <Text style={styles.karmaNumber}>25</Text>
-            <Text style={styles.karmaLabel}>Karma Points Collected</Text>
-          </View>
-          
-          <View style={styles.statsRow}>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>5</Text>
-              <Text style={styles.statLabel}>Requests</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>12</Text>
-              <Text style={styles.statLabel}>Responses</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>3</Text>
-              <Text style={styles.statLabel}>People Helped</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.actionsSection}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={handleCreateNewRequest}
-          >
-            <Ionicons name="add-circle" size={32} color="white" />
-            <Text style={styles.actionButtonText}>Create New Request</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.leaderboardButton}
-            onPress={() => navigation.navigate('Leaderboard', { userName })}
-          >
-            <Ionicons name="trophy" size={24} color="#2BB673" />
-            <Text style={styles.leaderboardButtonText}>View Leaderboard</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={async () => {
-              try {
-                await AsyncStorage.removeItem('userName');
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: 'NameInput' }],
-                });
-              } catch (error) {
-                notify.banner({
-                  title: 'Error',
-                  message: 'Failed to logout. Please try again.',
-                  type: 'error',
-                  durationMs: 4000
-                });
-              }
-            }}
-          >
-            <Ionicons name="log-out" size={24} color="#E5484D" />
-            <Text style={styles.logoutButtonText}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-
+        </ScrollView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }
