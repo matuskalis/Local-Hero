@@ -324,9 +324,6 @@ export default function HomeScreen({ navigation, route }: any) {
                         <Ionicons name="people" size={20} color="#6B7280" />
                         <Text style={styles.attendeeCountText}>{a.attendeeCount || 0}</Text>
                       </View>
-                      <TouchableOpacity onPress={() => openAnnouncement(a)} style={styles.moreBtn}>
-                        <Text style={styles.moreText}>Open</Text>
-                      </TouchableOpacity>
                     </View>
                   </TouchableOpacity>
                 ))}
