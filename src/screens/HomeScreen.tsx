@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNotify } from '../ui/notifications/NotificationProvider';
 import { Avatar } from '../ui/components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { telemetry, logEvent, logScreenView, TELEMETRY_EVENTS } from '../lib/telemetry';
 
 // Shared state for requests - this will be passed between screens
 export let sharedRequests: any[] = [
@@ -178,15 +179,23 @@ export default function HomeScreen({ navigation, route }: any) {
         setLoading(true);
         setError(null);
         
+        // Log screen view
+        logScreenView('HomeScreen', { 
+          activeTab: activeTab,
+          userName: userName 
+        });
+        
         // Try to load from cache first
         const cachedRequests = await loadFromCache('requests_cache');
         const cachedAnnouncements = await loadFromCache('announcements_cache');
         
         if (cachedRequests) {
           setRequests(cachedRequests);
+          logEvent('CacheHit', { type: 'requests' });
         }
         if (cachedAnnouncements) {
           setAnnouncements(cachedAnnouncements);
+          logEvent('CacheHit', { type: 'announcements' });
         }
         
         // Simulate API call
@@ -203,8 +212,14 @@ export default function HomeScreen({ navigation, route }: any) {
         await saveToCache('requests_cache', freshRequests);
         await saveToCache('announcements_cache', freshAnnouncements);
         
+        logEvent('DataLoaded', { 
+          requestsCount: freshRequests.length,
+          announcementsCount: freshAnnouncements.length 
+        });
+        
       } catch (err) {
         setError('Failed to load data. Please try again.');
+        logEvent('DataLoadError', { error: err });
       } finally {
         setLoading(false);
       }
@@ -229,6 +244,10 @@ export default function HomeScreen({ navigation, route }: any) {
   const onRefresh = () => {
     setRefreshing(true);
     refreshRequests();
+    logEvent(TELEMETRY_EVENTS.REFRESH_FEED, { 
+      activeTab: activeTab,
+      requestsCount: requests.length 
+    });
     setTimeout(() => {
       setRefreshing(false);
       notify.banner({ 
@@ -289,6 +308,11 @@ export default function HomeScreen({ navigation, route }: any) {
   const handleRequestPress = (request: any) => {
     // Navigate to request detail screen
     navigation.navigate('RequestDetail', { request, userName });
+    logEvent(TELEMETRY_EVENTS.OPEN_REQUEST, { 
+      requestId: request.id,
+      requestCategory: request.category,
+      isOwnRequest: request.isOwn 
+    });
     notify.toast({ message: 'Opening request details...' });
   };
 
@@ -314,6 +338,12 @@ export default function HomeScreen({ navigation, route }: any) {
     setIsAttending(prev => {
       const next = { ...prev, [id]: !prev[id] };
       notify.toast({ message: next[id] ? 'Marked attending' : 'Attendance removed' });
+      
+      logEvent(TELEMETRY_EVENTS.ANNOUNCEMENT_ATTEND, { 
+        announcementId: id,
+        isAttending: next[id] 
+      });
+      
       return next;
     });
   };
@@ -351,7 +381,13 @@ export default function HomeScreen({ navigation, route }: any) {
       <View style={styles.tabSwitcher}>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'announcements' && styles.tabButtonActive]}
-          onPress={() => setActiveTab('announcements')}
+          onPress={() => {
+            setActiveTab('announcements');
+            logEvent(TELEMETRY_EVENTS.TAB_SWITCH, { 
+              fromTab: activeTab,
+              toTab: 'announcements' 
+            });
+          }}
         >
           <Ionicons 
             name="megaphone" 
@@ -365,7 +401,13 @@ export default function HomeScreen({ navigation, route }: any) {
         
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'requests' && styles.tabButtonActive]}
-          onPress={() => setActiveTab('requests')}
+          onPress={() => {
+            setActiveTab('requests');
+            logEvent(TELEMETRY_EVENTS.TAB_SWITCH, { 
+              fromTab: activeTab,
+              toTab: 'requests' 
+            });
+          }}
         >
           <Ionicons 
             name="people" 

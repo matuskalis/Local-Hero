@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from '../ui/components';
 import { useNotify } from '../ui/notifications/NotificationProvider';
 import { addPoints, incrementResponseCount } from '../lib/points';
+import { logEvent, TELEMETRY_EVENTS } from '../lib/telemetry';
 
 interface Request {
   id: number;
@@ -114,6 +115,12 @@ export default function RequestDetailScreen({ navigation, route }: any) {
       // Increment response count for the user
       await incrementResponseCount(userName);
       
+      logEvent(TELEMETRY_EVENTS.SUBMIT_OFFER, { 
+        requestId: request.id,
+        requesterName: request.userName,
+        offerLength: note.trim().length 
+      });
+      
       // Reset form
       setNote('');
       setNoteHeight(60);
@@ -174,6 +181,13 @@ export default function RequestDetailScreen({ navigation, route }: any) {
         // Increment response count for the helper
         await incrementResponseCount(acceptedOffer.helperName);
         
+        logEvent(TELEMETRY_EVENTS.ACCEPT_OFFER, { 
+          offerId,
+          helperName: acceptedOffer.helperName,
+          requestId: request.id,
+          karmaPointsAwarded: 10 
+        });
+        
         notify.banner({
           title: 'Offer Accepted!',
           message: `${acceptedOffer.helperName} will contact you soon. They earned +10 karma points!`,
@@ -196,8 +210,20 @@ export default function RequestDetailScreen({ navigation, route }: any) {
   };
 
   const handleDeclineOffer = (offerId: string) => {
+    // Find the declined offer for logging
+    const declinedOffer = offers.find(offer => offer.id === offerId);
+    
     // Remove the offer from the list
     setOffers(prev => prev.filter(offer => offer.id !== offerId));
+    
+    if (declinedOffer) {
+      logEvent(TELEMETRY_EVENTS.DECLINE_OFFER, { 
+        offerId,
+        helperName: declinedOffer.helperName,
+        requestId: request.id 
+      });
+    }
+    
     notify.banner({
       title: 'Offer Declined',
       message: 'You have declined this offer.',
