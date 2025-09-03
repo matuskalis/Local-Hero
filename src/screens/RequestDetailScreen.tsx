@@ -211,51 +211,7 @@ export default function RequestDetailScreen({ navigation, route }: any) {
     // Don't reload offers - they're already loaded from request data or mock
   };
 
-  const handleReportRequest = (requestId: number) => {
-    Alert.alert(
-      'Report Request',
-      'Are you sure you want to report this request? This will be reviewed by our moderation team.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Report', 
-          style: 'destructive',
-          onPress: () => {
-            notify.banner({
-              title: 'Request Reported',
-              message: 'This request has been reported to our moderation team.',
-              type: 'success',
-              durationMs: 4000
-            });
-          }
-        }
-      ]
-    );
-  };
 
-  const handleBlockUser = (userName: string) => {
-    Alert.alert(
-      'Block User',
-      `Are you sure you want to block ${userName}? You won't see their requests or be able to message them.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Block', 
-          style: 'destructive',
-          onPress: () => {
-            notify.banner({
-              title: 'User Blocked',
-              message: `${userName} has been blocked.`,
-              type: 'success',
-              durationMs: 4000
-            });
-            // Navigate back after blocking
-            setTimeout(() => navigation.goBack(), 2000);
-          }
-        }
-      ]
-    );
-  };
 
   if (!request) {
     return (
@@ -310,27 +266,6 @@ export default function RequestDetailScreen({ navigation, route }: any) {
               </View>
               <Text style={styles.requestTime}>{request.createdAt}</Text>
             </View>
-            
-            {/* Report/Block buttons for non-own requests */}
-            {!request.isOwn && (
-              <View style={styles.moderationSection}>
-                <TouchableOpacity
-                  style={styles.reportButton}
-                  onPress={() => handleReportRequest(request.id)}
-                >
-                  <Ionicons name="flag" size={16} color="#E53E3E" />
-                  <Text style={styles.reportButtonText}>Report</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                  style={styles.blockButton}
-                  onPress={() => handleBlockUser(request.userName)}
-                >
-                  <Ionicons name="ban" size={16} color="#E53E3E" />
-                  <Text style={styles.blockButtonText}>Block</Text>
-                </TouchableOpacity>
-              </View>
-            )}
 
           </View>
           
@@ -767,44 +702,6 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 20,
     color: '#7f8c8d',
-  },
-  moderationSection: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 12,
-    gap: 8,
-  },
-  reportButton: {
-    backgroundColor: '#FEF2F2',
-    borderWidth: 1,
-    borderColor: '#FECACA',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  reportButtonText: {
-    color: '#E53E3E',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  blockButton: {
-    backgroundColor: '#FEF2F2',
-    borderWidth: 1,
-    borderColor: '#FECACA',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  blockButtonText: {
-    color: '#E53E3E',
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
 
