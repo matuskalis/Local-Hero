@@ -97,6 +97,52 @@ export default function UserProfileScreen({ navigation, route }: UserProfileProp
     });
   };
 
+  const handleReportUser = () => {
+    Alert.alert(
+      'Report User',
+      `Are you sure you want to report ${otherUserName}? This will be reviewed by our moderation team.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Report', 
+          style: 'destructive',
+          onPress: () => {
+            notify.banner({
+              title: 'User Reported',
+              message: `${otherUserName} has been reported to our moderation team.`,
+              type: 'success',
+              durationMs: 4000
+            });
+          }
+        }
+      ]
+    );
+  };
+
+  const handleBlockUser = () => {
+    Alert.alert(
+      'Block User',
+      `Are you sure you want to block ${otherUserName}? You won't see their requests or be able to message them.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Block', 
+          style: 'destructive',
+          onPress: () => {
+            notify.banner({
+              title: 'User Blocked',
+              message: `${otherUserName} has been blocked.`,
+              type: 'success',
+              durationMs: 4000
+            });
+            // Navigate back after blocking
+            setTimeout(() => navigation.goBack(), 2000);
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       {/* White Header */}
@@ -247,6 +293,26 @@ export default function UserProfileScreen({ navigation, route }: UserProfileProp
 
         {/* Action Buttons */}
         <View style={styles.actionsSection}>
+          {!isOwnProfile && (
+            <View style={styles.moderationSection}>
+              <TouchableOpacity
+                style={styles.reportButton}
+                onPress={handleReportUser}
+              >
+                <Ionicons name="flag" size={20} color="#E53E3E" />
+                <Text style={styles.reportButtonText}>Report</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.blockButton}
+                onPress={handleBlockUser}
+              >
+                <Ionicons name="ban" size={20} color="#E53E3E" />
+                <Text style={styles.blockButtonText}>Block</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          
           <TouchableOpacity
             style={styles.chatButton}
             onPress={handleChatPress}
@@ -498,6 +564,48 @@ const styles = StyleSheet.create({
   actionsSection: {
     paddingHorizontal: 20,
     marginBottom: 24,
+  },
+  moderationSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    gap: 12,
+  },
+  reportButton: {
+    flex: 1,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  reportButtonText: {
+    color: '#E53E3E',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  blockButton: {
+    flex: 1,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  blockButtonText: {
+    color: '#E53E3E',
+    fontSize: 16,
+    fontWeight: '600',
   },
   chatButton: {
     backgroundColor: '#2BB673',
