@@ -28,8 +28,12 @@ export default function MyRequestsScreen({ navigation, route }: any) {
   };
 
   const handleRequestPress = (request: any) => {
-    // Navigate to request detail or show more info
-    console.log('Request details:', request);
+    // Navigate to request detail screen
+    navigation.navigate('RequestDetail', {
+      request: request,
+      userName: userName,
+      showOffers: true, // Auto-show offers for own requests
+    });
   };
 
   const handleDeleteRequest = (requestId: number) => {
