@@ -159,77 +159,51 @@ export default function RequestDetailScreen({ navigation, route }: any) {
   };
 
   const handleAcceptOffer = async (offerId: string) => {
-    Alert.alert(
-      'Accept Offer',
-      'Are you sure you want to accept this offer? You can only accept one offer per request.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Accept',
-          style: 'default',
-          onPress: async () => {
-            // Find the accepted offer
-            const acceptedOffer = offers.find(offer => offer.id === offerId);
-            if (acceptedOffer) {
-              try {
-                // Add karma points to the helper
-                await addPoints(
-                  acceptedOffer.helperName, 
-                  10, 
-                  'Help Accepted', 
-                  request.id.toString()
-                );
-                
-                // Increment response count for the helper
-                await incrementResponseCount(acceptedOffer.helperName);
-                
-                notify.banner({
-                  title: 'Offer Accepted!',
-                  message: `${acceptedOffer.helperName} will contact you soon. They earned +10 karma points!`,
-                  type: 'success',
-                  durationMs: 5000
-                });
-                
-                // Remove other offers since only one can be accepted
-                setOffers([acceptedOffer]);
-              } catch (error) {
-                console.error('Error processing offer acceptance:', error);
-                notify.banner({
-                  title: 'Error',
-                  message: 'Failed to process offer acceptance. Please try again.',
-                  type: 'error',
-                  durationMs: 4000
-                });
-              }
-            }
-          },
-        },
-      ]
-    );
+    // Find the accepted offer
+    const acceptedOffer = offers.find(offer => offer.id === offerId);
+    if (acceptedOffer) {
+      try {
+        // Add karma points to the helper
+        await addPoints(
+          acceptedOffer.helperName, 
+          10, 
+          'Help Accepted', 
+          request.id.toString()
+        );
+        
+        // Increment response count for the helper
+        await incrementResponseCount(acceptedOffer.helperName);
+        
+        notify.banner({
+          title: 'Offer Accepted!',
+          message: `${acceptedOffer.helperName} will contact you soon. They earned +10 karma points!`,
+          type: 'success',
+          durationMs: 5000
+        });
+        
+        // Remove other offers since only one can be accepted
+        setOffers([acceptedOffer]);
+      } catch (error) {
+        console.error('Error processing offer acceptance:', error);
+        notify.banner({
+          title: 'Error',
+          message: 'Failed to process offer acceptance. Please try again.',
+          type: 'error',
+          durationMs: 4000
+        });
+      }
+    }
   };
 
   const handleDeclineOffer = (offerId: string) => {
-    Alert.alert(
-      'Decline Offer',
-      'Are you sure you want to decline this offer?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Decline',
-          style: 'destructive',
-          onPress: () => {
-            // In real app, this would remove the offer from the list
-            setOffers(prev => prev.filter(offer => offer.id !== offerId));
-            notify.banner({
-              title: 'Offer Declined',
-              message: 'You have declined this offer.',
-              type: 'info',
-              durationMs: 4000
-            });
-          },
-        },
-      ]
-    );
+    // Remove the offer from the list
+    setOffers(prev => prev.filter(offer => offer.id !== offerId));
+    notify.banner({
+      title: 'Offer Declined',
+      message: 'You have declined this offer.',
+      type: 'info',
+      durationMs: 4000
+    });
   };
 
   const toggleOffers = () => {

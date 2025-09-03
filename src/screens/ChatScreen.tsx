@@ -40,15 +40,114 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   const [declinedOffers, setDeclinedOffers] = useState<string[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
   
-  const { request, helper, userName, offer } = route.params;
+  const { request, helper, userName, offer, chatType } = route.params;
   const otherUserName = helper ? helper.name : request.userName;
 
-  // Mock messages data with offers
+  // Mock messages data based on chat type
   useEffect(() => {
     let mockMessages: Message[] = [];
     
-    // If this is an offer chat, start with the offer message
-    if (offer) {
+    if (chatType === 'approved_offer') {
+      // User's offer was approved
+      mockMessages = [
+        {
+          id: '1',
+          text: `I can help with: ${request.body}`,
+          senderId: 'user',
+          senderName: userName,
+          timestamp: '3 hours ago',
+          isOwn: true,
+          type: 'text',
+        },
+        {
+          id: '2',
+          text: 'Thank you for offering to help! I\'ve accepted your offer and you earned +10 karma points.',
+          senderId: 'helper',
+          senderName: otherUserName,
+          timestamp: '2 hours ago',
+          isOwn: false,
+          type: 'text',
+        },
+        {
+          id: '3',
+          text: 'Great! When would be a good time for me to come help?',
+          senderId: 'user',
+          senderName: userName,
+          timestamp: '1 hour ago',
+          isOwn: true,
+          type: 'text',
+        },
+      ];
+    } else if (chatType === 'declined_offer') {
+      // User's offer was declined
+      mockMessages = [
+        {
+          id: '1',
+          text: `I can help with: ${request.body}`,
+          senderId: 'user',
+          senderName: userName,
+          timestamp: '2 days ago',
+          isOwn: true,
+          type: 'text',
+        },
+        {
+          id: '2',
+          text: 'Thanks for your offer, but I\'ve already found someone else to help with this request.',
+          senderId: 'helper',
+          senderName: otherUserName,
+          timestamp: '1 day ago',
+          isOwn: false,
+          type: 'text',
+        },
+      ];
+    } else if (chatType === 'help_offered') {
+      // Someone offered help to user's request
+      mockMessages = [
+        {
+          id: '1',
+          text: `I can help with: ${request.body}`,
+          senderId: 'helper',
+          senderName: otherUserName,
+          timestamp: '3 hours ago',
+          isOwn: false,
+          type: 'offer',
+          offerId: 'demo-offer',
+          offerNote: 'I have experience and I\'m available this weekend.',
+        },
+      ];
+    } else if (chatType === 'help_approved') {
+      // User approved someone's help offer
+      mockMessages = [
+        {
+          id: '1',
+          text: `I can help with: ${request.body}`,
+          senderId: 'helper',
+          senderName: otherUserName,
+          timestamp: '5 hours ago',
+          isOwn: false,
+          type: 'text',
+        },
+        {
+          id: '2',
+          text: 'Great! I\'ve accepted your help offer. You earned +10 karma points for helping me.',
+          senderId: 'user',
+          senderName: userName,
+          timestamp: '4 hours ago',
+          isOwn: true,
+          type: 'text',
+        },
+        {
+          id: '3',
+          text: 'Thank you! When would be a good time for me to come help?',
+          senderId: 'helper',
+          senderName: otherUserName,
+          timestamp: '3 hours ago',
+          isOwn: false,
+          type: 'text',
+        },
+      ];
+    } else if (offer) {
+      // Legacy offer chat
       mockMessages.push({
         id: 'offer-1',
         text: `I can help with: ${request.body}`,
@@ -81,29 +180,11 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
           isOwn: true,
           type: 'text',
         },
-        {
-          id: '3',
-          text: 'I can come tomorrow afternoon around 2 PM. Does that work for you?',
-          senderId: 'helper',
-          senderName: otherUserName,
-          timestamp: '30 minutes ago',
-          isOwn: false,
-          type: 'text',
-        },
-        {
-          id: '4',
-          text: 'Perfect! That works great. I\'ll see you then.',
-          senderId: 'user',
-          senderName: userName,
-          timestamp: 'Just now',
-          isOwn: true,
-          type: 'text',
-        },
       ];
     }
     
     setMessages(mockMessages);
-  }, [otherUserName, userName, offer, request]);
+  }, [otherUserName, userName, offer, request, chatType]);
 
   const sendMessage = () => {
     if (!message.trim()) return;

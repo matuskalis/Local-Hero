@@ -22,86 +22,59 @@ export default function InboxScreen({ navigation, route }: any) {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      type: 'offer',
+      type: 'chat',
       from: 'Sarah Wilson',
       fromId: 'sarah123',
-      subject: 'I can help with yard work!',
-      preview: 'Hi! I saw your request for yard work and I\'d be happy to help. I have experience with gardening and I\'m available this weekend.',
+      subject: 'Your offer was approved! 🎉',
+      preview: 'Thank you for offering to help! I\'ve accepted your offer and you earned +10 karma points.',
       time: '2 hours ago',
       unread: true,
-      requestId: 3, // Updated to match your yard work request
-      requestTitle: 'Need help with yard work',
-      offerId: '1',
+      requestId: 1,
+      requestTitle: 'Snow shoveling needed',
+      chatType: 'approved_offer',
     },
     {
       id: 2,
-      type: 'offer',
+      type: 'chat',
       from: 'Mike Johnson',
       fromId: 'mike456',
-      subject: 'Available for yard work',
-      preview: 'I\'d be happy to help. I have all the necessary tools.',
+      subject: 'Your offer was declined',
+      preview: 'Thanks for your offer, but I\'ve already found someone else to help with this request.',
       time: '1 day ago',
       unread: true,
-      requestId: 3, // Updated to match your yard work request
-      requestTitle: 'Need help with yard work',
-      offerId: '2',
+      requestId: 2,
+      requestTitle: 'Grocery pickup help',
+      chatType: 'declined_offer',
     },
     {
       id: 3,
       type: 'chat',
       from: 'Emma Davis',
       fromId: 'emma789',
-      subject: 'Chat: Snow shoveling request',
-      preview: 'Great! I can come tomorrow at 2 PM. Does that work for you? I\'ll bring my own shovel.',
+      subject: 'Help offer for your request',
+      preview: 'I can help with your yard work request! I have experience and I\'m available this weekend.',
       time: '3 hours ago',
-      unread: false,
+      unread: true,
       requestId: 3,
-      requestTitle: 'Snow shoveling needed',
+      requestTitle: 'Need help with yard work',
+      chatType: 'help_offered',
     },
     {
       id: 4,
-      type: 'request',
+      type: 'chat',
       from: 'Tom Wilson',
       fromId: 'tom101',
-      subject: 'New request: Help with grocery pickup',
-      preview: 'Hello! I just posted a new request for help with grocery pickup. I\'m unable to drive right now due to an injury.',
+      subject: 'Your help was approved! ⭐',
+      preview: 'Great! I\'ve accepted your help offer. You earned +10 karma points for helping me.',
       time: '4 hours ago',
       unread: true,
       requestId: 4,
       requestTitle: 'Grocery pickup help needed',
+      chatType: 'help_approved',
     },
   ]);
 
-  // Update messages when offers change in shared requests
-  useEffect(() => {
-    const updateMessagesFromOffers = () => {
-      const userRequests = sharedRequests.filter(req => req.isOwn && req.offers);
-      const offerMessages = userRequests.flatMap(req => 
-        req.offers.map(offer => ({
-          id: `offer-${offer.id}`,
-          type: 'offer',
-          from: offer.helperName,
-          fromId: offer.id,
-          subject: `I can help with ${req.body}!`,
-          preview: offer.note,
-          time: offer.createdAt,
-          unread: true,
-          requestId: req.id,
-          requestTitle: req.body,
-          offerId: offer.id,
-        }))
-      );
-      
-      // Merge with existing messages, avoiding duplicates
-      setMessages(prev => {
-        const existingIds = new Set(prev.map(m => m.id));
-        const newOffers = offerMessages.filter(m => !existingIds.has(m.id));
-        return [...newOffers, ...prev];
-      });
-    };
-
-    updateMessagesFromOffers();
-  }, [sharedRequests]);
+  // Marketing messages are static for demo purposes
 
 
   const handleInviteFriends = () => {
@@ -118,37 +91,20 @@ export default function InboxScreen({ navigation, route }: any) {
       )
     );
 
-    // Navigate based on message type
-    if (message.type === 'chat') {
-      // Navigate to chat
-      navigation.navigate('Chat', {
-        request: { id: message.requestId, title: message.requestTitle, userName: message.from },
-        helper: { name: userName },
-        userName
-      });
-    } else if (message.type === 'offer') {
-      // Find the actual request and offer
-      const request = sharedRequests.find(req => req.id === message.requestId);
-      const offer = request?.offers?.find(off => off.id === message.offerId);
-      
-      if (request && offer) {
-        // Navigate to chat with offer data
-        navigation.navigate('Chat', {
-          request: request,
-          helper: { name: offer.helperName },
-          userName: userName,
-          offer: offer,
-        });
-      }
-    } else if (message.type === 'request') {
-      // Navigate to request detail to see the new request
-      navigation.navigate('RequestDetail', {
-        request: { id: message.requestId, title: message.requestTitle, userName: message.from },
-        userName
-      });
-    }
-
-    notify.toast({ message: `Opening ${message.type}...` });
+    // Navigate to chat screen with appropriate mock data
+    navigation.navigate('Chat', {
+      request: { 
+        id: message.requestId, 
+        body: message.requestTitle,
+        userName: message.from,
+        isOwn: false
+      },
+      helper: { name: message.from },
+      userName: userName,
+      chatType: message.chatType,
+    });
+    
+    notify.toast({ message: `Opening chat...` });
   };
 
   const handleReply = (message: any) => {
