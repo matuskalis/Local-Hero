@@ -8,6 +8,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { getLeaderboardData, getUserRank, getUserStats } from '../lib/points';
 
 interface LeaderboardEntry {
   id: number;
@@ -27,26 +28,45 @@ export default function LeaderboardScreen({ navigation, route }: LeaderboardScre
   const [userRank, setUserRank] = useState<LeaderboardEntry | null>(null);
   const userName = route?.params?.userName || 'Your Name';
 
-  // Mock data - in real app this would come from database
+  // Load real leaderboard data
   useEffect(() => {
-    const mockData: LeaderboardEntry[] = [
-      { id: 1, name: 'Sarah Johnson', points: 150, rank: 1 },
-      { id: 2, name: 'Mike Chen', points: 120, rank: 2 },
-      { id: 3, name: 'Emma Davis', points: 95, rank: 3 },
-      { id: 4, name: 'Tom Wilson', points: 80, rank: 4 },
-      { id: 5, name: 'Lisa Brown', points: 65, rank: 5 },
-      { id: 6, name: 'David Lee', points: 50, rank: 6 },
-      { id: 7, name: 'Anna Garcia', points: 45, rank: 7 },
-      { id: 8, name: 'James Miller', points: 40, rank: 8 },
-      { id: 9, name: 'Maria Rodriguez', points: 35, rank: 9 },
-      { id: 10, name: 'Robert Taylor', points: 30, rank: 10 },
-    ];
-
-    setLeaderboardData(mockData);
-    
-    // Mock user rank (outside top 10)
-    setUserRank({ id: 999, name: userName, points: 25, rank: 15 });
+    loadLeaderboardData();
   }, [userName]);
+
+  // Refresh leaderboard when screen comes into focus
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadLeaderboardData();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  const loadLeaderboardData = async () => {
+    try {
+      const leaderboard = await getLeaderboardData();
+      const formattedData: LeaderboardEntry[] = leaderboard.map((entry, index) => ({
+        id: index + 1,
+        name: entry.name,
+        points: entry.karmaPoints,
+        rank: entry.rank,
+      }));
+      
+      setLeaderboardData(formattedData);
+      
+      // Get user's actual rank
+      const userRankData = await getUserRank(userName);
+      if (userRankData) {
+        setUserRank({ 
+          id: 999, 
+          name: userName, 
+          points: userRankData.points, 
+          rank: userRankData.rank 
+        });
+      }
+    } catch (error) {
+      console.error('Error loading leaderboard data:', error);
+    }
+  };
 
   const getPeriodTitle = () => {
     switch (selectedPeriod) {

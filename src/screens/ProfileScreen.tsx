@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from '../ui/components';
 import { useNotify } from '../ui/notifications/NotificationProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getUserStats, UserStats } from '../lib/points';
 
 export default function ProfileScreen({ navigation, route }: any) {
   const notify = useNotify();
@@ -16,11 +17,26 @@ export default function ProfileScreen({ navigation, route }: any) {
   const [tempPhoneNumber, setTempPhoneNumber] = useState('');
   const [tempName, setTempName] = useState(userName);
   const [tempLocation, setTempLocation] = useState('Melstone, MT');
+  const [userStats, setUserStats] = useState<UserStats>({
+    karmaPoints: 0,
+    helpedPeople: 0,
+    requestsCreated: 0,
+    responsesGiven: 0,
+  });
 
-  // Load phone number from storage on component mount
+  // Load phone number and user stats from storage on component mount
   React.useEffect(() => {
     loadPhoneNumber();
+    loadUserStats();
   }, []);
+
+  // Refresh stats when screen comes into focus (e.g., after accepting offers)
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadUserStats();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const loadPhoneNumber = async () => {
     try {
@@ -30,6 +46,15 @@ export default function ProfileScreen({ navigation, route }: any) {
       }
     } catch (error) {
       console.log('Error loading phone number:', error);
+    }
+  };
+
+  const loadUserStats = async () => {
+    try {
+      const stats = await getUserStats(userName);
+      setUserStats(stats);
+    } catch (error) {
+      console.log('Error loading user stats:', error);
     }
   };
 
@@ -349,28 +374,28 @@ export default function ProfileScreen({ navigation, route }: any) {
             </View>
           </View>
 
-          {/* Stats Section */}
-          <View style={styles.statsSection}>
-            <View style={styles.karmaCard}>
-              <Ionicons name="star" size={32} color="#FFD700" />
-              <Text style={styles.karmaNumber}>25</Text>
-              <Text style={styles.karmaLabel}>Karma Points Collected</Text>
-            </View>
-            <View style={styles.statsRow}>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>5</Text>
-                <Text style={styles.statLabel}>Requests</Text>
-              </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>12</Text>
-                <Text style={styles.statLabel}>Responses</Text>
-              </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>3</Text>
-                <Text style={styles.statLabel}>People Helped</Text>
-              </View>
-            </View>
-          </View>
+                     {/* Stats Section */}
+           <View style={styles.statsSection}>
+             <View style={styles.karmaCard}>
+               <Ionicons name="star" size={32} color="#FFD700" />
+               <Text style={styles.karmaNumber}>{userStats.karmaPoints}</Text>
+               <Text style={styles.karmaLabel}>Karma Points Collected</Text>
+             </View>
+             <View style={styles.statsRow}>
+               <View style={styles.statCard}>
+                 <Text style={styles.statNumber}>{userStats.requestsCreated}</Text>
+                 <Text style={styles.statLabel}>Requests</Text>
+               </View>
+               <View style={styles.statCard}>
+                 <Text style={styles.statNumber}>{userStats.responsesGiven}</Text>
+                 <Text style={styles.statLabel}>Responses</Text>
+               </View>
+               <View style={styles.statCard}>
+                 <Text style={styles.statNumber}>{userStats.helpedPeople}</Text>
+                 <Text style={styles.statLabel}>People Helped</Text>
+               </View>
+             </View>
+           </View>
 
           {/* Actions Section */}
           <View style={styles.actionsSection}>

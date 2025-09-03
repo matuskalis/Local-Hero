@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from '../ui/components';
 import { useNotify } from '../ui/notifications/NotificationProvider';
+import { addPoints, incrementResponseCount } from '../lib/points';
 
 interface Request {
   id: number;
@@ -110,6 +111,9 @@ export default function RequestDetailScreen({ navigation, route }: any) {
       // Add to local state only - don't modify request data directly
       setOffers(prev => [newOffer, ...prev]);
       
+      // Increment response count for the user
+      await incrementResponseCount(userName);
+      
       // Reset form
       setNote('');
       setNoteHeight(60);
@@ -154,7 +158,7 @@ export default function RequestDetailScreen({ navigation, route }: any) {
     }
   };
 
-  const handleAcceptOffer = (offerId: string) => {
+  const handleAcceptOffer = async (offerId: string) => {
     Alert.alert(
       'Accept Offer',
       'Are you sure you want to accept this offer? You can only accept one offer per request.',
@@ -163,21 +167,40 @@ export default function RequestDetailScreen({ navigation, route }: any) {
         {
           text: 'Accept',
           style: 'default',
-          onPress: () => {
+          onPress: async () => {
             // Find the accepted offer
             const acceptedOffer = offers.find(offer => offer.id === offerId);
             if (acceptedOffer) {
-              // In real app, this would update the request status to 'matched'
-              // and add karma points to the helper
-              notify.banner({
-                title: 'Offer Accepted!',
-                message: `${acceptedOffer.helperName} will contact you soon. They earned +10 karma points!`,
-                type: 'success',
-                durationMs: 5000
-              });
-              
-              // Remove other offers since only one can be accepted
-              setOffers([acceptedOffer]);
+              try {
+                // Add karma points to the helper
+                await addPoints(
+                  acceptedOffer.helperName, 
+                  10, 
+                  'Help Accepted', 
+                  request.id.toString()
+                );
+                
+                // Increment response count for the helper
+                await incrementResponseCount(acceptedOffer.helperName);
+                
+                notify.banner({
+                  title: 'Offer Accepted!',
+                  message: `${acceptedOffer.helperName} will contact you soon. They earned +10 karma points!`,
+                  type: 'success',
+                  durationMs: 5000
+                });
+                
+                // Remove other offers since only one can be accepted
+                setOffers([acceptedOffer]);
+              } catch (error) {
+                console.error('Error processing offer acceptance:', error);
+                notify.banner({
+                  title: 'Error',
+                  message: 'Failed to process offer acceptance. Please try again.',
+                  type: 'error',
+                  durationMs: 4000
+                });
+              }
             }
           },
         },
