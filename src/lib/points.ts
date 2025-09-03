@@ -18,10 +18,10 @@ export interface PointsLog {
 
 // Default stats for new users
 const DEFAULT_STATS: UserStats = {
-  karmaPoints: 0,
-  helpedPeople: 0,
-  requestsCreated: 0,
-  responsesGiven: 0,
+  karmaPoints: 100,
+  helpedPeople: 10,
+  requestsCreated: 5,
+  responsesGiven: 15,
 };
 
 // Points awarded for different actions
@@ -210,17 +210,23 @@ export const getUserRank = async (userName: string): Promise<{ rank: number; poi
     const userStats = await getUserStats(userName);
     const leaderboard = await getLeaderboardData();
     
+    // Add current user to leaderboard for ranking calculation
+    const allUsers = [...leaderboard, { 
+      name: userName, 
+      karmaPoints: userStats.karmaPoints, 
+      helpedPeople: userStats.helpedPeople,
+      requestsCreated: userStats.requestsCreated,
+      responsesGiven: userStats.responsesGiven,
+      rank: 0 
+    }];
+    
+    // Sort by karma points (descending)
+    const sortedUsers = allUsers.sort((a, b) => b.karmaPoints - a.karmaPoints);
+    
     // Find user's rank
-    const sortedLeaderboard = leaderboard.sort((a, b) => b.karmaPoints - a.karmaPoints);
-    const userRank = sortedLeaderboard.findIndex(entry => entry.name === userName) + 1;
+    const userRank = sortedUsers.findIndex(entry => entry.name === userName) + 1;
     
-    if (userRank > 0) {
-      return { rank: userRank, points: userStats.karmaPoints };
-    }
-    
-    // If user is not in top 10, calculate their rank
-    const usersWithMorePoints = sortedLeaderboard.filter(entry => entry.karmaPoints > userStats.karmaPoints).length;
-    return { rank: usersWithMorePoints + 1, points: userStats.karmaPoints };
+    return { rank: userRank, points: userStats.karmaPoints };
   } catch (error) {
     console.error('Error getting user rank:', error);
     return null;
