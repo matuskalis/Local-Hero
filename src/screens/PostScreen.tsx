@@ -93,14 +93,34 @@ export default function PostScreen({ navigation, route }: any) {
           {/* When */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>When do you need help?</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="e.g., This weekend, Next week, ASAP"
-              value={whenText}
-              onChangeText={setWhenText}
-              maxLength={50}
-            />
-            <Text style={styles.characterCount}>{whenText.length}/50</Text>
+            <View style={styles.chipContainer}>
+              {['Today', 'This weekend', 'Next week', 'Specific date'].map((chip) => (
+                <TouchableOpacity
+                  key={chip}
+                  style={[
+                    styles.chip,
+                    whenText === chip && styles.chipSelected
+                  ]}
+                  onPress={() => setWhenText(chip)}
+                >
+                  <Text style={[
+                    styles.chipText,
+                    whenText === chip && styles.chipTextSelected
+                  ]}>
+                    {chip}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            {whenText === 'Specific date' && (
+              <TextInput
+                style={styles.textInput}
+                placeholder="Enter specific date (e.g., Dec 25, 2024)"
+                value={whenText}
+                onChangeText={setWhenText}
+                maxLength={50}
+              />
+            )}
           </View>
 
           {/* Visibility */}
@@ -333,5 +353,31 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 22,
     fontWeight: 'bold',
+  },
+  chipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  chip: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  chipSelected: {
+    backgroundColor: '#2BB673',
+    borderColor: '#2BB673',
+  },
+  chipText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  chipTextSelected: {
+    color: 'white',
   },
 });
