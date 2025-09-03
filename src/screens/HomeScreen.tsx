@@ -432,7 +432,8 @@ export default function HomeScreen({ navigation, route }: any) {
         ) : error ? (
           <ErrorState />
         ) : (
-        {activeTab === 'announcements' ? (
+          <>
+            {activeTab === 'announcements' ? (
           /* City Announcements Content */
           <View style={styles.contentSection}>
             {announcements.length === 0 ? (
@@ -565,6 +566,7 @@ export default function HomeScreen({ navigation, route }: any) {
             </View>
           </View>
         )}
+          </>
         )}
       </ScrollView>
 
