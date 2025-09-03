@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNotify } from '../ui/notifications/NotificationProvider';
 import { Avatar } from '../ui/components';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Shared state for requests - this will be passed between screens
 export let sharedRequests: any[] = [
@@ -143,11 +144,74 @@ export default function HomeScreen({ navigation, route }: any) {
   const notify = useNotify();
   const [requests, setRequests] = useState(sharedRequests);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>(mockAnnouncements);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [isAttending, setIsAttending] = useState<Record<number, boolean>>({});
   const [activeTab, setActiveTab] = useState<'announcements' | 'requests'>('announcements');
   const userName = route?.params?.userName || 'Your Name';
+
+  // Cache functions
+  const saveToCache = async (key: string, data: any) => {
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify(data));
+    } catch (error) {
+      console.log('Error saving to cache:', error);
+    }
+  };
+
+  const loadFromCache = async (key: string) => {
+    try {
+      const cached = await AsyncStorage.getItem(key);
+      return cached ? JSON.parse(cached) : null;
+    } catch (error) {
+      console.log('Error loading from cache:', error);
+      return null;
+    }
+  };
+
+  // Simulate loading on mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Try to load from cache first
+        const cachedRequests = await loadFromCache('requests_cache');
+        const cachedAnnouncements = await loadFromCache('announcements_cache');
+        
+        if (cachedRequests) {
+          setRequests(cachedRequests);
+        }
+        if (cachedAnnouncements) {
+          setAnnouncements(cachedAnnouncements);
+        }
+        
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Update with fresh data
+        const freshRequests = [...sharedRequests];
+        const freshAnnouncements = mockAnnouncements;
+        
+        setRequests(freshRequests);
+        setAnnouncements(freshAnnouncements);
+        
+        // Save to cache
+        await saveToCache('requests_cache', freshRequests);
+        await saveToCache('announcements_cache', freshAnnouncements);
+        
+      } catch (err) {
+        setError('Failed to load data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
 
   // Refresh requests from shared state
   const refreshRequests = () => {
@@ -174,6 +238,49 @@ export default function HomeScreen({ navigation, route }: any) {
       });
     }, 500);
   };
+
+  // Loading skeleton component
+  const LoadingSkeleton = () => (
+    <View style={styles.skeletonContainer}>
+      {[1, 2, 3].map((i) => (
+        <View key={i} style={styles.skeletonCard}>
+          <View style={styles.skeletonHeader}>
+            <View style={styles.skeletonAvatar} />
+            <View style={styles.skeletonTextContainer}>
+              <View style={styles.skeletonTitle} />
+              <View style={styles.skeletonSubtitle} />
+            </View>
+          </View>
+          <View style={styles.skeletonContent}>
+            <View style={styles.skeletonLine} />
+            <View style={styles.skeletonLine} />
+            <View style={[styles.skeletonLine, { width: '60%' }]} />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+
+  // Error state component
+  const ErrorState = () => (
+    <View style={styles.errorState}>
+      <Ionicons name="alert-circle" size={64} color="#E53E3E" />
+      <Text style={styles.errorTitle}>Something went wrong</Text>
+      <Text style={styles.errorMessage}>{error}</Text>
+      <TouchableOpacity style={styles.retryButton} onPress={() => {
+        setError(null);
+        setLoading(true);
+        // Retry loading
+        setTimeout(() => {
+          setRequests([...sharedRequests]);
+          setAnnouncements(mockAnnouncements);
+          setLoading(false);
+        }, 1000);
+      }}>
+        <Text style={styles.retryButtonText}>Try Again</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   const handleProfilePress = () => {
     navigation.navigate('Profile', { userName, refreshRequests });
@@ -278,6 +385,11 @@ export default function HomeScreen({ navigation, route }: any) {
         }
         showsVerticalScrollIndicator={false}
       >
+        {loading ? (
+          <LoadingSkeleton />
+        ) : error ? (
+          <ErrorState />
+        ) : (
         {activeTab === 'announcements' ? (
           /* City Announcements Content */
           <View style={styles.contentSection}>
@@ -410,6 +522,7 @@ export default function HomeScreen({ navigation, route }: any) {
               </View>
             </View>
           </View>
+        )}
         )}
       </ScrollView>
 
@@ -910,5 +1023,89 @@ const styles = StyleSheet.create({
   },
   announcementsContainer: {
     gap: 8, // Reduced from 16 to 8 (half the spacing)
+  },
+  // Loading skeleton styles
+  skeletonContainer: {
+    padding: 20,
+  },
+  skeletonCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  skeletonHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  skeletonAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E5E7EB',
+    marginRight: 12,
+  },
+  skeletonTextContainer: {
+    flex: 1,
+  },
+  skeletonTitle: {
+    height: 16,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 8,
+    marginBottom: 8,
+    width: '60%',
+  },
+  skeletonSubtitle: {
+    height: 12,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 6,
+    width: '40%',
+  },
+  skeletonContent: {
+    gap: 8,
+  },
+  skeletonLine: {
+    height: 14,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 7,
+    width: '100%',
+  },
+  // Error state styles
+  errorState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  errorTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  retryButton: {
+    backgroundColor: '#2BB673',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
