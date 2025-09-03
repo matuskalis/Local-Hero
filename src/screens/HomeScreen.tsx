@@ -368,7 +368,7 @@ export default function HomeScreen({ navigation, route }: any) {
                           <Text style={styles.categoryIcon}>
                             {getCategoryIcon(request.category)}
                           </Text>
-                          <Text style={styles.requestTitle}>{request.body}</Text>
+                          <Text style={styles.requestTitle} numberOfLines={2}>{request.body}</Text>
                         </View>
                         <Text style={styles.requestTime}>{request.createdAt}</Text>
                       </View>
@@ -377,7 +377,7 @@ export default function HomeScreen({ navigation, route }: any) {
                     <View style={styles.requestFooter}>
                       <View style={styles.requestMeta}>
                         <Ionicons name="time" size={20} color="#4D4D4D" />
-                        <Text style={styles.requestMetaText} numberOfLines={1}>{request.when}</Text>
+                        <Text style={styles.requestMetaText} numberOfLines={2}>{request.when}</Text>
                       </View>
                       
                       <View style={styles.requestMeta}>
@@ -393,7 +393,7 @@ export default function HomeScreen({ navigation, route }: any) {
                       
                       <View style={styles.requestMeta}>
                         <Ionicons name="location" size={20} color="#4D4D4D" />
-                        <Text style={styles.requestMetaText} numberOfLines={1}>{request.community}</Text>
+                        <Text style={styles.requestMetaText} numberOfLines={2}>{request.community}</Text>
                       </View>
                     </View>
                   </TouchableOpacity>

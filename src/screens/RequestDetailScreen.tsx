@@ -293,22 +293,12 @@ export default function RequestDetailScreen({ navigation, route }: any) {
         </View>
 
         {/* Offers Section */}
-        <View style={styles.offersSection}>
-          <TouchableOpacity
-            style={styles.offersHeader}
-            onPress={toggleOffers}
-          >
+        {request.isOwn && (
+          <View style={styles.offersSection}>
             <Text style={styles.offersTitle}>
               Offers ({offers.length})
             </Text>
-            <Ionicons 
-              name={showOffers ? 'chevron-up' : 'chevron-down'} 
-              size={24} 
-              color="#2c3e50" 
-            />
-          </TouchableOpacity>
-
-          {showOffers && (
+            
             <View style={styles.offersList}>
               {offers.map((offer) => (
                 <View key={offer.id} style={styles.offerCard}>
@@ -319,28 +309,26 @@ export default function RequestDetailScreen({ navigation, route }: any) {
                   
                   <Text style={styles.offerNote}>{offer.note}</Text>
                   
-                  {request.isOwn && (
-                    <View style={styles.offerActions}>
-                      <TouchableOpacity
-                        style={styles.acceptButton}
-                        onPress={() => handleAcceptOffer(offer.id)}
-                      >
-                        <Text style={styles.acceptButtonText}>Accept</Text>
-                      </TouchableOpacity>
-                      
-                      <TouchableOpacity
-                        style={styles.declineButton}
-                        onPress={() => handleDeclineOffer(offer.id)}
-                      >
-                        <Text style={styles.declineButtonText}>Decline</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
+                  <View style={styles.offerActions}>
+                    <TouchableOpacity
+                      style={styles.acceptButton}
+                      onPress={() => handleAcceptOffer(offer.id)}
+                    >
+                      <Text style={styles.acceptButtonText}>Accept</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      style={styles.declineButton}
+                      onPress={() => handleDeclineOffer(offer.id)}
+                    >
+                      <Text style={styles.declineButtonText}>Decline</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               ))}
             </View>
-          )}
-        </View>
+          </View>
+        )}
 
         {/* Submit Offer Section - Only show if not own request */}
         {!request.isOwn && (
@@ -591,12 +579,12 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   acceptButton: {
-    backgroundColor: '#27ae60',
+    backgroundColor: '#2BB673',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
-    flex: 1,
-    marginRight: 10,
+    flex: 2,
+    marginRight: 8,
   },
   acceptButtonText: {
     color: 'white',
@@ -604,17 +592,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   declineButton: {
-    backgroundColor: '#e74c3c',
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
     flex: 1,
-    marginLeft: 10,
+    marginLeft: 8,
   },
   declineButtonText: {
-    color: 'white',
+    color: '#6B7280',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   submitOfferSection: {
     backgroundColor: 'white',

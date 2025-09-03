@@ -336,14 +336,25 @@ export default function ProfileScreen({ navigation, route }: any) {
               
               {/* Phone Number Section */}
               {!isEditingPhone ? (
-                <TouchableOpacity
-                  style={styles.phoneContainer}
-                  onPress={handlePhoneNumberPress}
-                >
-                  <Text style={styles.userPhone}>
-                    📞 {phoneNumber || 'No phone number added'}
-                  </Text>
-                </TouchableOpacity>
+                phoneNumber ? (
+                  <TouchableOpacity
+                    style={styles.phoneContainer}
+                    onPress={handlePhoneNumberPress}
+                  >
+                    <Text style={styles.userPhone}>
+                      📞 {phoneNumber}
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.addPhoneContainer}
+                    onPress={handlePhoneNumberPress}
+                  >
+                    <Text style={styles.addPhoneText}>
+                      📞 Add phone number
+                    </Text>
+                  </TouchableOpacity>
+                )
               ) : (
                 <View style={styles.editPhoneContainer}>
                   <TextInput
@@ -529,6 +540,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 8,
+  },
+  addPhoneContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+  },
+  addPhoneText: {
+    fontSize: 16,
+    color: '#2BB673',
+    fontWeight: '500',
   },
   editPhoneContainer: {
     alignItems: 'center',
