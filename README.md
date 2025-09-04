@@ -1,150 +1,218 @@
-# 🏠 Local Hero
+# Local Hero - Community Help Platform
 
-A super-simple app that connects elders who need help with nearby people who want to help — focused on small rural communities.
+A modern React Native app that connects neighbors to help each other with daily tasks and community needs.
 
 ## 🌟 Features
 
-- **Radical Simplicity**: Big buttons, minimal steps, plain language
-- **Local-First**: See requests near you in your community
-- **Flexible Visibility**: Public or Friends-only requests
-- **Low-Friction Contact**: In-app messaging and optional phone calls
-- **Karma System**: Earn points for helping others
+### Core Functionality
+- **Request System**: Create and manage help requests
+- **Offer System**: Offer help to neighbors with accept/decline workflow
+- **Real-time Chat**: Communicate with helpers/requesters
+- **Karma Points**: Gamified system rewarding helpful community members
+- **User Profiles**: Manage personal information and contact details
 
-## 🎯 Core Functionality
+### Community Features
+- **City Announcements**: Stay updated with local events and news
+- **Leaderboard**: See top community helpers
+- **Moderation Tools**: Report and block inappropriate users/requests
+- **Offline Support**: Cache data for offline usage
 
-### For Elders (Requesters)
-- Post help requests with free text description
-- Set optional deadlines in plain language (e.g., "tonight", "before winter")
-- Choose who can see your request (Public or Friends only)
-- Receive offers and coordinate with helpers
-
-### For Helpers
-- Browse nearby help requests
-- Offer to help with optional messages
-- Coordinate via in-app messaging
-- Earn karma points for completed help
+### UX/UX Excellence
+- **Apple-style Design**: Clean, modern interface optimized for seniors
+- **Loading States**: Skeleton screens and error handling
+- **Preset Options**: Quick selection for common help types
+- **Responsive Design**: Works on all screen sizes
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+- Node.js (v16 or higher)
+- npm or yarn
 - Expo CLI
-- Supabase account
+- iOS Simulator or Android Emulator
 
 ### Installation
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd local-hero-app
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/matuskalis/Local-Hero.git
+   cd Local-Hero
+   ```
 
-2. Install dependencies:
-```bash
-npm install
-```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-3. Set up environment variables:
-```bash
-cp env.example .env
-# Add your Supabase URL and anon key
-```
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-4. Set up Supabase database:
-```bash
-# Run the migration files in supabase/migrations/
-# Start with 001_initial_schema.sql, then 002_local_hero_schema.sql
-```
-
-5. Start the development server:
-```bash
-npm start
-```
-
-## 🏗️ Architecture
-
-### Frontend
-- **React Native** with Expo
-- **TypeScript** for type safety
-- **React Navigation** for tab-based navigation
-- **Supabase JS Client** for backend communication
-
-### Backend
-- **Supabase** (PostgreSQL + Auth + RLS)
-- **Row Level Security** for data privacy
-- **Real-time subscriptions** for live updates
-- **Stored procedures** for complex operations
-
-### Database Schema
-- `profiles`: User information and karma points
-- `requests`: Help requests with visibility rules
-- `offers`: Helper offers on requests
-- `messages`: In-app communication
-- `friends`: Friendship relationships
-- `notifications`: Push notification data
+4. **Run on device/simulator**
+   - Press `i` for iOS simulator
+   - Press `a` for Android emulator
+   - Scan QR code with Expo Go app
 
 ## 📱 App Structure
 
-- **Home**: Feed of nearby requests, big "I need help" button
-- **Post**: 6-step wizard for creating help requests
-- **Inbox**: Manage your requests, offers, and messages
-- **Profile**: Edit profile, manage friends, view karma
+### Screens
+- **HomeScreen**: Main feed with announcements and requests
+- **RequestDetailScreen**: View and manage individual requests
+- **PostScreen**: Create new help requests
+- **ChatScreen**: Real-time messaging with offers
+- **ProfileScreen**: User profile and settings
+- **UserProfileScreen**: View other users' profiles
+- **MyRequestsScreen**: Manage your own requests
+- **LeaderboardScreen**: Community rankings
+- **InboxScreen**: Message center
 
-## 🔒 Security Features
+### Key Components
+- **Avatar**: User profile pictures
+- **Card**: Reusable content containers
+- **PrimaryButton/SecondaryButton**: Action buttons
+- **Badge**: Status indicators
+- **InputField**: Form inputs
+- **ActionSheet**: Modal interactions
+- **NotificationProvider**: In-app notifications
 
-- **Row Level Security (RLS)** on all tables
-- **Visibility rules**: Public vs Friends-only requests
-- **Authentication**: Email magic link sign-in
-- **Data isolation**: Users only see authorized content
+## 🏗️ Architecture
 
-## 🎨 Design Principles
+### State Management
+- **Shared State**: Global request data
+- **AsyncStorage**: Persistent user data and cache
+- **React Hooks**: Local component state
 
-- **Senior-friendly**: Large touch targets (min 56px)
-- **High contrast**: Clear typography and colors
-- **One action per screen**: Simple, focused interfaces
-- **Plain English**: No jargon or technical terms
+### Data Flow
+1. **Requests**: Created → Stored → Displayed → Offers → Accepted/Declined
+2. **Karma System**: Actions → Points → Leaderboard → Rankings
+3. **Chat**: Offers → Messages → Real-time communication
+
+### Key Libraries
+- **React Native**: Core framework
+- **Expo**: Development platform
+- **React Navigation**: Screen navigation
+- **AsyncStorage**: Data persistence
+- **Ionicons**: Icon library
+
+## 📊 Analytics & Telemetry
+
+### Tracked Events
+- **User Actions**: OpenRequest, SubmitOffer, AcceptOffer, DeclineOffer
+- **Navigation**: ScreenView, TabSwitch
+- **Engagement**: RefreshFeed, AnnouncementAttend
+- **Moderation**: ReportUser, BlockUser, ReportRequest
+
+### Success Metrics
+- **User Engagement**: Daily active users, session duration
+- **Community Growth**: New requests, successful help exchanges
+- **Feature Adoption**: Chat usage, profile completion
+- **Retention**: User return rate, repeat requests
+
+## 🎨 Design System
+
+### Colors
+- **Primary Green**: #2BB673 (main actions)
+- **Secondary Gray**: #6B7280 (text, borders)
+- **Success Green**: #27ae60 (confirmations)
+- **Error Red**: #E53E3E (errors, warnings)
+- **Background**: #f8f9fa (light gray)
+
+### Typography
+- **Headers**: 24px, bold, #000000
+- **Body**: 18px, regular, #000000
+- **Meta**: 14px, regular, #6B7280
+- **Buttons**: 16px, semibold
+
+### Spacing
+- **Card Padding**: 20px
+- **Section Margin**: 24px
+- **Element Gap**: 8-16px
+
+## 🔧 Development
+
+### Code Structure
+```
+src/
+├── screens/          # App screens
+├── ui/              # Reusable components
+│   ├── components/  # UI components
+│   └── notifications/ # Notification system
+├── lib/             # Utilities
+│   ├── points.ts    # Karma system
+│   └── telemetry.ts # Analytics
+└── App.tsx          # Main app component
+```
+
+### Key Features Implementation
+
+#### Karma System
+- Points awarded for helping others (+10 points)
+- Leaderboard rankings
+- User statistics tracking
+- Persistent storage with AsyncStorage
+
+#### Offer Workflow
+1. User creates request
+2. Others submit offers
+3. Requester reviews offers
+4. Accept/decline with chat integration
+5. Karma points awarded on acceptance
+
+#### Moderation
+- Report users/requests
+- Block inappropriate users
+- Community safety features
+- Admin review system
 
 ## 🚀 Deployment
 
-### Expo Build
+### Production Build
 ```bash
-# Build for iOS
+# Build for production
+expo build:android
 expo build:ios
 
-# Build for Android
-expo build:android
-
-# Build for web
-expo build:web
+# Or use EAS Build
+eas build --platform all
 ```
 
-### Supabase Deployment
-1. Push migrations to production
-2. Update environment variables
-3. Test authentication and RLS policies
+### App Store Submission
+1. Configure app.json with production settings
+2. Build production version
+3. Submit to App Store/Google Play
+4. Monitor analytics and user feedback
 
-## 📊 Success Metrics
+## 📈 Success Metrics
 
-- T1 retention of requesters (post again within 7 days)
-- % of requests receiving at least 1 offer within 24h
-- Median time to first offer
-- Completion rate from offer → matched
+### Key Performance Indicators
+- **User Acquisition**: New user registrations
+- **Engagement**: Requests created, offers submitted
+- **Community Health**: Successful help exchanges
+- **Retention**: Monthly active users
+- **Growth**: Community size, geographic expansion
 
-## 🔮 Future Features
-
-- Multiple communities and geofencing
-- Media uploads (photos of tasks)
-- Availability windows and scheduling
-- Reputation and thanks badges
-- Safety features (ID verification, admin tools)
+### Analytics Dashboard
+- Real-time user activity
+- Feature usage statistics
+- Community engagement metrics
+- Error tracking and performance
 
 ## 🤝 Contributing
 
+### Development Workflow
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+2. Create feature branch
+3. Implement changes with tests
+4. Submit pull request
+5. Code review and merge
+
+### Code Standards
+- TypeScript for type safety
+- ESLint for code quality
+- Prettier for formatting
+- Component documentation
+- Test coverage
 
 ## 📄 License
 
@@ -152,6 +220,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🙏 Acknowledgments
 
-- Built for small rural communities like Melstone, Montana
-- Designed with seniors in mind
-- Inspired by the spirit of neighbor helping neighbor 
+- React Native community
+- Expo team for excellent tooling
+- Design inspiration from Apple's Human Interface Guidelines
+- Community feedback and testing
+
+---
+
+**Built with ❤️ for stronger communities**

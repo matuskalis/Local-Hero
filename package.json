@@ -4,9 +4,15 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
+    "dev": "expo start --clear",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build:android": "expo build:android",
+    "build:ios": "expo build:ios",
+    "build:all": "expo build:all",
+    "test": "echo \"No tests specified\" && exit 0",
+    "lint": "echo \"No linter configured\" && exit 0"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.1.2",
@@ -29,5 +35,24 @@
     "typescript": "~5.8.3"
   },
   "private": true,
-  "description": "Local Hero - Connect elders who need help with nearby people who want to help"
+  "description": "Local Hero - A community platform connecting neighbors to help each other with daily tasks and build stronger communities",
+  "keywords": [
+    "react-native",
+    "expo",
+    "community",
+    "help",
+    "neighbors",
+    "social",
+    "mobile-app"
+  ],
+  "author": "Matus Kalis",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/matuskalis/Local-Hero.git"
+  },
+  "bugs": {
+    "url": "https://github.com/matuskalis/Local-Hero/issues"
+  },
+  "homepage": "https://github.com/matuskalis/Local-Hero#readme"
 }

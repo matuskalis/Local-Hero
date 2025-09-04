@@ -3,10 +3,12 @@
     "name": "Local Hero",
     "slug": "local-hero-app",
     "version": "1.0.0",
+    "description": "Connect with neighbors to help each other and build stronger communities",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "privacy": "public",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
